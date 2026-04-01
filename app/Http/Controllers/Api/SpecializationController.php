@@ -39,7 +39,8 @@ class SpecializationController extends Controller
      */
     public function update(UpdateSpecializationRequest $request, Specialization $specialization)
     {
-        return new SpecializationResource($specialization->update($request->validated()));
+        $specialization->update($request->validated());
+        return new SpecializationResource($specialization);
     }
 
     /**
