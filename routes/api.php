@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SpecializationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,3 +10,4 @@ use Illuminate\Support\Facades\Route;
 //})->middleware('auth:sanctum');
 
 Route::apiResource('roles', RoleController::class);
+Route::apiResource('specializations', SpecializationController::class);

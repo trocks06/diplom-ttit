@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Http\Resources\RoleResource;
 use App\Models\Role;
 
 class RoleController extends Controller
@@ -14,7 +15,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        return response()->json(Role::all());
+        return RoleResource::collection(Role::all());
     }
 
     /**
@@ -22,7 +23,7 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        return Role::create($request->all());
+        return new RoleResource(Role::create($request->validated()));
     }
 
     /**
@@ -30,7 +31,7 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        return $role;
+        return new RoleResource($role);
     }
 
     /**
@@ -38,8 +39,7 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        $role->update($request->all());
-        return $role;
+        return new RoleResource($role->update($request->validated()));
     }
 
     /**
