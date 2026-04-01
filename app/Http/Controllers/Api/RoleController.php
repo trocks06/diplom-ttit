@@ -22,7 +22,7 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        Role::create($request->all());
+        return Role::create($request->all());
     }
 
     /**

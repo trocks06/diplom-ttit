@@ -15,13 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property int $id
  * @property int|null $user_id
- * @property int|null $specialization_id
  * @property string|null $license
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * 
  * @property User|null $user
- * @property Specialization|null $specialization
+ * @property Collection|Specialization[] $specializations
  * @property Collection|Schedule[] $schedules
  *
  * @package App\Models
@@ -31,13 +30,11 @@ class Doctor extends Model
 	protected $table = 'doctors';
 
 	protected $casts = [
-		'user_id' => 'int',
-		'specialization_id' => 'int'
+		'user_id' => 'int'
 	];
 
 	protected $fillable = [
 		'user_id',
-		'specialization_id',
 		'license'
 	];
 
@@ -46,9 +43,9 @@ class Doctor extends Model
 		return $this->belongsTo(User::class);
 	}
 
-	public function specialization()
+	public function specializations()
 	{
-		return $this->belongsTo(Specialization::class);
+		return $this->belongsToMany(Specialization::class, 'doctor_specializations');
 	}
 
 	public function schedules()

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class Specialization
  * 
  * @property int $id
- * @property string|null $specialization_name
+ * @property string $specialization_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * 
@@ -32,6 +32,6 @@ class Specialization extends Model
 
 	public function doctors()
 	{
-		return $this->hasMany(Doctor::class);
+		return $this->belongsToMany(Doctor::class, 'doctor_specializations');
 	}
 }
