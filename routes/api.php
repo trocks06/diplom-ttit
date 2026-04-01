@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SpecializationController;
+use App\Http\Controllers\Api\StatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -11,3 +12,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('specializations', SpecializationController::class);
+Route::apiResource('statuses', StatusController::class);
