@@ -12,7 +12,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -28,7 +28,6 @@ class UpdateUserRequest extends FormRequest
             "patronymic" => ['required', 'string', 'max:100'],
             "phone" => ['required', 'string', 'max:20'],
             "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
-            "password" => ['required', 'string', 'min:8', 'max:50'],
             "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
             "role_id" => ['integer', 'exists:roles,id'],
         ];

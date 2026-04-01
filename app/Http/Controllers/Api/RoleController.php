@@ -50,7 +50,7 @@ class RoleController extends Controller
     {
         $role->delete();
         return response()->json([
-            "message" => "Роль успешно удалена"
+            "message" => "Роль успешно удалена."
         ]);
     }
 }

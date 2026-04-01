@@ -50,7 +50,7 @@ class SpecializationController extends Controller
     {
         $specialization->delete();
         return response()->json([
-            "message" => "Специальность успешно удалена"
+            "message" => "Специальность успешно удалена."
         ]);
     }
 }

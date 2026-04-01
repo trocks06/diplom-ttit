@@ -7,12 +7,17 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Class User
- * 
+ *
  * @property int $id
  * @property string|null $firstname
  * @property string|null $lastname
@@ -25,7 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $role_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * 
+ *
  * @property Role|null $role
  * @property Doctor|null $doctor
  * @property Collection|Notification[] $notifications
@@ -33,13 +38,17 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class User extends Model
+class User extends Authenticatable
 {
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
+
 	protected $table = 'users';
 
 	protected $casts = [
 		'verified' => 'bool',
-		'role_id' => 'int'
+		'role_id' => 'int',
+        'password' => 'hashed',
 	];
 
 	protected $hidden = [

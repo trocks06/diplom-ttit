@@ -12,7 +12,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -30,20 +30,6 @@ class StoreUserRequest extends FormRequest
             "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             "password" => ['required', 'string', 'min:8', 'max:50'],
             "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
-            "role_id" => ['required', 'integer', 'exists:roles,id'],
         ];
     }
 }
-
-//"id" => $this->id,
-//"firstname" => $this->firstname,
-//"lastname" => $this->lastname,
-//"patronymic" => $this->patronymic,
-//"phone" => $this->phone,
-//"email" => $this->email,
-//"password" => $this->password,
-//"avatar" => $this->avatar,
-//"verified" => $this->verified,
-//"role_id" => $this->role_id,
-//"created_at" => $this->created_at->format('d.m.Y H:i:s'),
-//"updated_at" => $this->updated_at->format('d.m.Y H:i:s'),

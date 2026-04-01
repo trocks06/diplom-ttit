@@ -50,7 +50,7 @@ class UserController extends Controller
     {
         $user->delete();
         return response()->json([
-            "message" => "Аккаунт успешно удален"
+            "message" => "Аккаунт успешно удален."
         ]);
     }
 }

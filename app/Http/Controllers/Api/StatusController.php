@@ -50,7 +50,7 @@ class StatusController extends Controller
     {
         $status->delete();
         return response()->json([
-            "message" => "Статус успешно удален"
+            "message" => "Статус успешно удален."
         ]);
     }
 }
