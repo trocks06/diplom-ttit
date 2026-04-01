@@ -13,3 +13,4 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('specializations', SpecializationController::class);
 Route::apiResource('statuses', StatusController::class);
+Route::apiResource('users', StatusController::class);
