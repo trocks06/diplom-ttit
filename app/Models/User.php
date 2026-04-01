@@ -18,8 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $lastname
  * @property string|null $patronymic
  * @property string|null $phone
- * @property string|null $email
- * @property string|null $password
+ * @property string $email
+ * @property string $password
+ * @property string|null $avatar
+ * @property bool|null $verified
  * @property int|null $role_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -36,6 +38,7 @@ class User extends Model
 	protected $table = 'users';
 
 	protected $casts = [
+		'verified' => 'bool',
 		'role_id' => 'int'
 	];
 
@@ -50,6 +53,8 @@ class User extends Model
 		'phone',
 		'email',
 		'password',
+		'avatar',
+		'verified',
 		'role_id'
 	];
 
