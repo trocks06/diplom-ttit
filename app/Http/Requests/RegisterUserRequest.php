@@ -28,7 +28,7 @@ class RegisterUserRequest extends FormRequest
             "patronymic" => ['nullable', 'string', 'max:100'],
             "phone" => ['required', 'string', 'max:20', 'unique:users,phone'],
             "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
-            "password" => ['required', 'string', 'min:8'],
+            "password" => ['required', 'string', 'min:8', 'confirmed'],
             "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
         ];
     }

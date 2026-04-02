@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -51,8 +52,18 @@ class AuthService
         $user->currentAccessToken()->delete();
     }
 
-    private function uploadAvatar(UploadedFile $file): string
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
     {
-        return $file->store('avatars', 'public');
+        if (!Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Текущий пароль указан неверно.'],
+            ]);
+        }
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        // Опционально: удалить все токены, чтобы пользователь перелогинился
+        $user->tokens()->delete();
     }
 }

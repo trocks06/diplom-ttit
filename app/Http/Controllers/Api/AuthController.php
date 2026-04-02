@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Resources\UserResource;
@@ -10,6 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Database\Eloquent\Attributes\UseResource;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -41,5 +43,19 @@ class AuthController extends Controller
     {
         $this->authService->logout(auth()->user());
         return response()->json(['message' => 'Вы вышли из системы.']);
+    }
+
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        try {
+            $this->authService->changePassword(
+                $request->user(),
+                $request->current_password,
+                $request->new_password
+            );
+            return response()->json(['message' => 'Пароль успешно изменён.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => $e->getMessage(), 'errors' => $e->errors()], 422);
+        }
     }
 }
