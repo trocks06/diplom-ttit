@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @extends BaseService<User>
+ */
 class UserService extends BaseService
 {
     protected AvatarService $avatarService;

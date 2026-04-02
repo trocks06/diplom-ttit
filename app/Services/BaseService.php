@@ -5,10 +5,19 @@ namespace App\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * @template TModel of Model
+ */
 abstract class BaseService
 {
+    /**
+     * @var TModel
+     */
     protected Model $model;
 
+    /**
+     * @param TModel $model
+     */
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -19,6 +28,9 @@ abstract class BaseService
         return $this->model->all();
     }
 
+    /**
+     * @return TModel
+     */
     public function find(int $id): Model
     {
         return $this->model->findOrFail($id);

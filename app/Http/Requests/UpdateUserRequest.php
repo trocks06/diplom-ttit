@@ -23,13 +23,14 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "firstname" => ['required', 'string', 'max:100'],
-            "lastname" => ['required', 'string', 'max:100'],
+            "firstname" => ['sometimes', 'string', 'max:100'],
+            "lastname" => ['sometimes', 'string', 'max:100'],
             "patronymic" => ['nullable', 'string', 'max:100'],
-            "phone" => ['required', 'string', 'max:20', 'unique:users,phone'],
-            "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
+            "phone" => ['sometimes', 'string', 'max:20', 'unique:users,phone,' . $this->route('user')->id],
+            "email" => ['sometimes', 'string', 'email', 'max:150', 'unique:users,email,' . $this->route('user')->id],
             "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
-            "role_id" => ['integer', 'exists:roles,id'],
+            "role_id" => ['sometimes', 'integer', 'exists:roles,id'],
+            "verified" => ['sometimes', 'boolean'],
         ];
     }
 }
