@@ -62,8 +62,6 @@ class AuthService
 
         $user->password = Hash::make($newPassword);
         $user->save();
-
-        // Опционально: удалить все токены, чтобы пользователь перелогинился
         $user->tokens()->delete();
     }
 }

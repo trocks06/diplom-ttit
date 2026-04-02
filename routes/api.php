@@ -19,3 +19,4 @@ Route::apiResource('users', UserController::class)->middleware('auth:sanctum');
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('logout', [AuthController::class, 'logout']);
+Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
