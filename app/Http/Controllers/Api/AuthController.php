@@ -4,44 +4,42 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginUserRequest;
-use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\RegisterUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Database\Eloquent\Attributes\UseResource;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(StoreUserRequest $request)
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
     {
-        $defaultRole = Role::where('role_name', 'Пациент')->first();
-        if (!$defaultRole) {
-            return response()->json([
-                'message' => 'Роль пользователя не настроена в системе. Обратитесь к администратору.'
-            ], 500);
-        }
-        $data = $request->validated();
-        $data['role_id'] = $defaultRole->id;
-        $data['verified'] = false;
-        $user = User::create($data);
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->authService = $authService;
+    }
+    public function register(RegisterUserRequest $request)
+    {
+        $user = $this->authService->register($request->validated());
+        $token = $user->createToken("auth_token")->plainTextToken;
         return (new UserResource($user))->additional(['token' => $token]);
     }
 
     public function login(LoginUserRequest $request)
     {
-        if (!auth()->attempt($request->validated())) {
-            return response()->json(['message' => 'Неправильные почта или пароль.'], 401);
+        try {
+            $result = $this->authService->login($request->validated());
+            return (new UserResource($result['user']))->additional(['token' => $result['token']]);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 401);
         }
-        $user = auth()->user();
-        $user->tokens()->delete();
-        $token = $user->createToken("Token of user: $user->lastname $user->firstname $user->patronymic" )->plainTextToken;
-        return (new UserResource($user))->additional(['token' => $token]);
     }
 
     public function logout()
     {
-        auth()->user()->currentAccessToken()->delete();
+        $this->authService->logout(auth()->user());
         return response()->json(['message' => 'Вы вышли из системы.']);
     }
 }

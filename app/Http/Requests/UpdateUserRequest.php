@@ -25,8 +25,8 @@ class UpdateUserRequest extends FormRequest
         return [
             "firstname" => ['required', 'string', 'max:100'],
             "lastname" => ['required', 'string', 'max:100'],
-            "patronymic" => ['required', 'string', 'max:100'],
-            "phone" => ['required', 'string', 'max:20'],
+            "patronymic" => ['nullable', 'string', 'max:100'],
+            "phone" => ['required', 'string', 'max:20', 'unique:users,phone'],
             "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
             "role_id" => ['integer', 'exists:roles,id'],

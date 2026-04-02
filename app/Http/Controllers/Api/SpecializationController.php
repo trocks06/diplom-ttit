@@ -7,15 +7,23 @@ use App\Http\Requests\StoreSpecializationRequest;
 use App\Http\Requests\UpdateSpecializationRequest;
 use App\Http\Resources\SpecializationResource;
 use App\Models\Specialization;
+use App\Services\SpecializationService;
 
 class SpecializationController extends Controller
 {
+    protected SpecializationService $specializationService;
+
+    public function __construct(SpecializationService $specializationService)
+    {
+        $this->specializationService = $specializationService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return SpecializationResource::collection(Specialization::all());
+        $specializations = $this->specializationService->getAll();
+        return SpecializationResource::collection($specializations);
     }
 
     /**
@@ -23,7 +31,8 @@ class SpecializationController extends Controller
      */
     public function store(StoreSpecializationRequest $request)
     {
-        return new SpecializationResource(Specialization::create($request->validated()));
+        $specialization = $this->specializationService->create($request->validated());
+        return new SpecializationResource($specialization);
     }
 
     /**
@@ -39,8 +48,8 @@ class SpecializationController extends Controller
      */
     public function update(UpdateSpecializationRequest $request, Specialization $specialization)
     {
-        $specialization->update($request->validated());
-        return new SpecializationResource($specialization);
+        $updatedSpecialization = $this->specializationService->update($specialization->id, $request->validated());
+        return new SpecializationResource($updatedSpecialization);
     }
 
     /**
@@ -48,7 +57,7 @@ class SpecializationController extends Controller
      */
     public function destroy(Specialization $specialization)
     {
-        $specialization->delete();
+        $this->specializationService->delete($specialization->id);
         return response()->json([
             "message" => "Специальность успешно удалена."
         ]);

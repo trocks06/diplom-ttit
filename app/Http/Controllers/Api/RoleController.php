@@ -7,15 +7,23 @@ use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Http\Resources\RoleResource;
 use App\Models\Role;
+use App\Services\RoleService;
 
 class RoleController extends Controller
 {
+    protected RoleService $roleService;
+
+    public function __construct(RoleService $roleService)
+    {
+        $this->roleService = $roleService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return RoleResource::collection(Role::all());
+        $roles = $this->roleService->getAll();
+        return RoleResource::collection($roles);
     }
 
     /**
@@ -23,7 +31,8 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        return new RoleResource(Role::create($request->validated()));
+        $role = $this->roleService->create($request->validated());
+        return new RoleResource($role);
     }
 
     /**
@@ -39,8 +48,8 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        $role->update($request->validated());
-        return new RoleResource($role);
+        $updatedRole = $this->roleService->update($role->id, $request->validated());
+        return new RoleResource($updatedRole);
     }
 
     /**
@@ -48,7 +57,10 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        $role->delete();
+        if (!$this->roleService->canBeDeleted($role)) {
+            return response()->json(['message' => 'Нельзя удалить роль, у которой есть пользователи.'], 400);
+        }
+        $this->roleService->delete($role->id);
         return response()->json([
             "message" => "Роль успешно удалена."
         ]);

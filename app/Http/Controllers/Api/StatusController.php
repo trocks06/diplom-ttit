@@ -7,15 +7,23 @@ use App\Http\Requests\StoreStatusRequest;
 use App\Http\Requests\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
+use App\Services\StatusService;
 
 class StatusController extends Controller
 {
+    protected StatusService $statusService;
+
+    public function __construct(StatusService $statusService)
+    {
+        $this->statusService = $statusService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return StatusResource::collection(Status::all());
+        $statuses = $this->statusService->getAll();
+        return StatusResource::collection($statuses);
     }
 
     /**
@@ -23,7 +31,8 @@ class StatusController extends Controller
      */
     public function store(StoreStatusRequest $request)
     {
-        return new StatusResource(Status::create($request->validated()));
+        $status = $this->statusService->create($request->validated());
+        return new StatusResource($status);
     }
 
     /**
@@ -39,8 +48,8 @@ class StatusController extends Controller
      */
     public function update(UpdateStatusRequest $request, Status $status)
     {
-        $status->update($request->validated());
-        return new StatusResource($status);
+        $updatedStatus = $this->statusService->update($status->id, $request->validated());
+        return new StatusResource($updatedStatus);
     }
 
     /**
