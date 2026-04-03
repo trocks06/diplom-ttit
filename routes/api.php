@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SpecializationController;
@@ -18,6 +19,7 @@ Route::apiResource('specializations', SpecializationController::class);
 Route::apiResource('statuses', StatusController::class);
 Route::apiResource('users', UserController::class)->middleware('auth:sanctum');
 Route::apiResource('patients', PatientController::class)->middleware('auth:sanctum');
+Route::apiResource('doctors', DoctorController::class)->middleware('auth:sanctum');;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('logout', [AuthController::class, 'logout']);

@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             "avatar" => $this->avatar,
             "verified" => $this->verified,
             "role_id" => $this->role_id,
+            "role_name" => $this->role->role_name,
             "created_at" => $this->created_at->format('d.m.Y H:i:s'),
             "updated_at" => $this->updated_at->format('d.m.Y H:i:s'),
         ];

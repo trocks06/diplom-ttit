@@ -18,7 +18,7 @@ class UpdatePatientRequest extends FormRequest
             'gender' => ['sometimes', 'string', 'in:Мужской,Женский'],
             'allergies' => ['nullable', 'string', 'max:500'],
             'chronic_diseases' => ['nullable', 'string', 'max:500'],
-            'birth_date' => ['sometimes', 'date', 'date_format:Y-m-d', 'before:today'],
+            'birth_date' => ['sometimes', 'date', 'date_format:d-m-Y', 'before:today'],
         ];
     }
 

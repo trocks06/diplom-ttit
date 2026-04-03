@@ -40,7 +40,7 @@ class PatientController extends Controller
      */
     public function show(Patient $patient)
     {
-        return new PatientResource($patient);
+        return new PatientResource($patient->load(['user']));
     }
 
     /**

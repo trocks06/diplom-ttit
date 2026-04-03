@@ -16,7 +16,7 @@ class PatientResource extends JsonResource
     {
         return [
             "id" => $this->id,
-            "user_id" => $this->user_id,
+            'user' => new UserResource($this->whenLoaded('user')),
             "address" => $this->address,
             "gender" => $this->gender,
             "allergies" => $this->allergies,

@@ -10,4 +10,9 @@ class PatientService extends BaseService
     {
         parent::__construct($patient);
     }
+
+    public function getAllWithRelations()
+    {
+        return $this->model->with(['user'])->get();
+    }
 }
