@@ -25,6 +25,7 @@ class UserResource extends JsonResource
             "verified" => $this->verified,
             "role_id" => $this->role_id,
             "role_name" => $this->role->role_name,
+            "patient" => new PatientResource($this->whenLoaded('patient')),
             "created_at" => $this->created_at->format('d.m.Y H:i:s'),
             "updated_at" => $this->updated_at->format('d.m.Y H:i:s'),
         ];

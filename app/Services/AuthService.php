@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -28,7 +29,19 @@ class AuthService
             $data['avatar'] = $this->avatarService->upload($data['avatar']);
         }
 
-        return User::create($data);
+        return DB::transaction(function () use ($data) {
+            $user = User::create($data);
+            $user->patient()->create([
+                'user_id' => $user->id,
+                 'address' => $data['address'] ?? null,
+                 'birth_date' => $data['birth_date'] ?? null,
+                 'gender' => $data['gender'] ?? null,
+                 'allergies' => $data['allergies'] ?? null,
+                 'chronic_diseases' => $data['chronic_diseases'] ?? null,
+            ]);
+
+            return $user;
+        });
     }
 
     public function login(array $data): array

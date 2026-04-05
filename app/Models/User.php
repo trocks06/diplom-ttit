@@ -6,8 +6,10 @@
 
 namespace App\Models;
 
+use App\Notifications\ApiResetPassword;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,10 +40,10 @@ use Laravel\Sanctum\HasApiTokens;
  *
  * @package App\Models
  */
-class User extends Authenticatable
+class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, MustVerifyEmail;
 
 	protected $table = 'users';
 
@@ -86,4 +88,9 @@ class User extends Authenticatable
 	{
 		return $this->hasOne(Patient::class);
 	}
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ApiResetPassword($token));
+    }
 }

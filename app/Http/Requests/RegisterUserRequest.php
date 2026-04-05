@@ -23,13 +23,18 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "firstname" => ['required', 'string', 'max:100'],
-            "lastname" => ['required', 'string', 'max:100'],
-            "patronymic" => ['nullable', 'string', 'max:100'],
-            "phone" => ['required', 'string', 'max:20', 'unique:users,phone'],
-            "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
-            "password" => ['required', 'string', 'min:8', 'confirmed'],
-            "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
+            'firstname' => ['required', 'string', 'max:100'],
+            'lastname' => ['required', 'string', 'max:100'],
+            'patronymic' => ['nullable', 'string', 'max:100'],
+            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'email' => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'gender' => ['required', 'string', 'in:Мужской,Женский'],
+            'allergies' => ['nullable', 'string', 'max:500'],
+            'chronic_diseases' => ['nullable', 'string', 'max:500'],
+            'birth_date' => ['required', 'date', 'date_format:d.m.Y', 'before:today'],
         ];
     }
 }

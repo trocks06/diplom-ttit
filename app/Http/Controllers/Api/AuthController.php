@@ -26,6 +26,7 @@ class AuthController extends Controller
     {
         $user = $this->authService->register($request->validated());
         $token = $user->createToken("auth_token")->plainTextToken;
+        $user->load('patient');
         return (new UserResource($user))->additional(['token' => $token]);
     }
 
