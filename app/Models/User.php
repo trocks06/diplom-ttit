@@ -48,7 +48,6 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 	protected $table = 'users';
 
 	protected $casts = [
-		'verified' => 'bool',
 		'role_id' => 'int',
         'password' => 'hashed',
 	];
@@ -65,7 +64,6 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 		'email',
 		'password',
 		'avatar',
-		'verified',
 		'role_id'
 	];
 
