@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Doctor;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
 class DoctorService extends BaseService
 {
@@ -11,8 +13,42 @@ class DoctorService extends BaseService
         parent::__construct($doctor);
     }
 
-    public function getAllWithRelations()
+    public function createDoctor(array $data): Doctor
     {
-        return $this->model->with(['user', 'specializations'])->get();
+        return DB::transaction(function () use ($data) {
+            $doctor = $this->model->create($data);
+
+            if (!empty($data['specialization_ids'])) {
+                $doctor->specializations()->sync($data['specialization_ids']);
+            }
+
+            return $doctor->load(['user', 'specializations']);
+        });
+    }
+
+    public function create(array $data): Model
+    {
+        return DB::transaction(function () use ($data) {
+            $doctor = parent::create($data);
+
+            if (!empty($data['specialization_ids'])) {
+                $doctor->specializations()->sync($data['specialization_ids']);
+            }
+
+            return $doctor->load('specializations');
+        });
+    }
+
+    public function update(int $id, array $data): Model
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $doctor = parent::update($id, $data);
+
+            if (isset($data['specialization_ids'])) {
+                $doctor->specializations()->sync($data['specialization_ids']);
+            }
+
+            return $doctor->load('specializations');
+        });
     }
 }

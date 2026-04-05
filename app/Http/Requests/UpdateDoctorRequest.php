@@ -15,6 +15,8 @@ class UpdateDoctorRequest extends FormRequest
     {
         return [
             'license' => ['sometimes', 'string', 'max:100', 'unique:doctors,license,' . $this->route('doctor')->id],
+            'specialization_ids' => ['sometimes', 'array'],
+            'specialization_ids.*' => ['integer', 'exists:specializations,id'],
         ];
     }
 }
