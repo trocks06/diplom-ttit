@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\EmailVerificationController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\ResetPasswordController;
 use App\Http\Controllers\Api\RoleController;
@@ -28,6 +29,8 @@ Route::apiResource('patients', PatientController::class);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('schedules', ScheduleController::class);
 Route::apiResource('appointments', AppointmentController::class);
+Route::apiResource('notifications', NotificationController::class)->middleware('auth:sanctum');
+
 Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);

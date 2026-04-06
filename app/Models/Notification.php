@@ -11,14 +11,13 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Notification
- * 
+ *
  * @property int $id
  * @property int|null $user_id
  * @property string|null $text
  * @property bool|null $is_read
  * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * 
+ *
  * @property User|null $user
  *
  * @package App\Models
@@ -26,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
 class Notification extends Model
 {
 	protected $table = 'notifications';
+    const UPDATED_AT = null;
 
 	protected $casts = [
 		'user_id' => 'int',
