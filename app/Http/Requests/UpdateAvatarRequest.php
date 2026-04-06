@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateReviewRequest extends FormRequest
+class UpdateAvatarRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,7 @@ class UpdateReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rating' => ['sometimes', 'integer', 'between:1,5'],
-            'comment' => ['nullable', 'string', 'max:500'],
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048']
         ];
     }
 }

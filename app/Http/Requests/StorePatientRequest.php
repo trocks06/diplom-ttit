@@ -8,29 +8,35 @@ class StorePatientRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return true; // Не забудь прописать логику авторизации, если нужно
     }
 
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer', 'exists:users,id', 'unique:patients,user_id'],
-            'address' => ['required', 'string', 'max:255'],
-            'gender' => ['required', 'string', 'in:Мужской,Женский'],
-            'allergies' => ['nullable', 'string', 'max:500'],
+            'firstname'  => ['required', 'string', 'max:100'],
+            'lastname'   => ['required', 'string', 'max:100'],
+            'patronymic' => ['nullable', 'string', 'max:100'],
+            'phone'      => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'email'      => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
+            'password'   => ['required', 'string', 'min:8'],
+
+            'address'          => ['required', 'string', 'max:255'],
+            'gender'           => ['required', 'string', 'in:Мужской,Женский'],
+            'allergies'        => ['nullable', 'string', 'max:500'],
             'chronic_diseases' => ['nullable', 'string', 'max:500'],
-            'birth_date' => ['required', 'date', 'date_format:d.m.Y', 'before:today'],
+            'birth_date'       => ['required', 'date', 'date_format:d.m.Y', 'before:today'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'user_id.required' => 'Необходимо указать ID пользователя.',
-            'user_id.exists' => 'Пользователь с таким ID не существует.',
-            'gender.in' => 'Пол может быть: Мужской, Женский.',
-            'birth_date.date' => 'Дата рождения должна быть корректной датой и соответствовать формату: дд.мм.гггг.',
-            'birth_date.before' => 'Дата рождения не может быть позже сегодняшнего дня.',
+            'gender.in'         => 'Пол может быть: Мужской, Женский.',
+            'birth_date.date'   => 'Укажите корректную дату.',
+            'birth_date.before' => 'Дата рождения не может быть в будущем.',
+            'phone.unique'      => 'Этот номер телефона уже зарегистрирован.',
+            'email.unique'      => 'Пользователь с таким email уже существует.',
         ];
     }
 }

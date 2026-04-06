@@ -2,10 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Role;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class StoreDoctorRequest extends FormRequest
 {
@@ -17,9 +14,17 @@ class StoreDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer', 'exists:users,id', 'unique:doctors,user_id'],
+            // --- Данные для таблицы users ---
+            'firstname' => ['required', 'string', 'max:100'],
+            'lastname' => ['required', 'string', 'max:100'],
+            'patronymic' => ['nullable', 'string', 'max:100'],
+            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'email' => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+
+
             'license' => ['required', 'string', 'max:100', 'unique:doctors,license'],
-            'specialization_ids' => ['required', 'array'],
+            'specialization_ids' => ['required', 'array', 'min:1'],
             'specialization_ids.*' => ['integer', 'exists:specializations,id'],
         ];
     }
@@ -27,11 +32,11 @@ class StoreDoctorRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.required' => 'Необходимо указать пользователя.',
-            'user_id.exists' => 'Пользователь не найден.',
-            'user_id.unique' => 'Этот пользователь уже является доктором.',
-            'license.required' => 'Номер лицензии обязателен.',
-            'license.unique' => 'Лицензия с таким номером уже существует.',
+            'phone.unique' => 'Этот номер телефона уже зарегистрирован.',
+            'email.unique' => 'Пользователь с таким email уже существует.',
+            'license.unique' => 'Врач с таким номером лицензии уже существует в системе.',
+            'specialization_ids.min'  => 'Необходимо указать хотя бы одну специализацию.',
+            'specialization_ids.*.exists' => 'Выбранная специализация не найдена.',
         ];
     }
 }

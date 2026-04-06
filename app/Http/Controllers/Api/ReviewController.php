@@ -26,25 +26,46 @@ class ReviewController extends Controller
      */
     public function index()
     {
-        return ReviewResource::collection($this->service->all(['appointment.user', 'appointment.doctor']));
+        $reviews = $this->service->getAll();
+        return ReviewResource::collection($reviews);
+    }
+
+    public function show(Review $review)
+    {
+        return new ReviewResource($review->load(['appointment.user', 'appointment.doctor']));
+    }
+
+    public function update(StoreReviewRequest $request, Review $review)
+    {
+        // 1. Проверяем права через Policy
+        $this->authorize('update', $review);
+
+        // 2. Обновляем данные (используем те же правила, что и при создании)
+        $review->update($request->validated());
+
+        return new ReviewResource($review);
     }
 
     /**
      * Оставить отзыв
      */
-    public function store(StoreReviewRequest $request)
+    public function store(StoreReviewRequest $request, Appointment $appointment)
     {
-        $appointment = Appointment::findOrFail($request->appointment_id);
-
-        // Проверяем через Policy: мой ли это прием и закончен ли он
+        // Проверка доступа через Policy
         $this->authorize('create', [Review::class, $appointment]);
 
-        // Проверяем, нет ли уже отзыва к этому приему
+        // Проверка на дубликат
         if ($appointment->review()->exists()) {
-            return response()->json(['message' => 'Отзыв к этому приему уже оставлен'], 422);
+            return response()->json(['message' => 'Отзыв уже существует'], 422);
         }
 
-        $review = $this->service->create($request->validated());
+        // Создаем отзыв, привязывая его к ID из URL
+        $review = $this->service->create([
+            'appointment_id' => $appointment->id,
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
         return new ReviewResource($review);
     }
 

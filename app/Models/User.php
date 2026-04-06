@@ -64,7 +64,8 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 		'email',
 		'password',
 		'avatar',
-		'role_id'
+		'role_id',
+        'email_verified_at'
 	];
 
 	public function role()

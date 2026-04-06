@@ -19,28 +19,28 @@ class UserService extends BaseService
         $this->avatarService = $avatarService;
     }
 
-    public function store(array $data): User
+    public function create(array $data): User
     {
-        if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
-            $data['avatar'] = $this->avatarService->upload($data['avatar']);
-        }
-
+        $data['email_verified_at'] = now();
         return $this->model->create($data);
     }
 
     public function update(int $id, array $data): User
     {
         $user = $this->find($id);
-
-        if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
-            if ($user->avatar) {
-                $this->avatarService->delete($user->avatar);
-            }
-            $data['avatar'] = $this->avatarService->upload($data['avatar']);
-        }
-
         $user->update($data);
         return $user;
+    }
+
+    public function updateAvatar(int $id, UploadedFile $file): string
+    {
+        $user = $this->find($id);
+        if ($user->avatar) {
+            $this->avatarService->delete($user->avatar);
+        }
+        $path = $this->avatarService->upload($file);
+        $user->update(['avatar' => $path]);
+        return $path;
     }
 
     public function delete(int $id): bool

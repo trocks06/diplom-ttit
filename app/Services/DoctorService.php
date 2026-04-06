@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Doctor;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -10,62 +11,49 @@ use Illuminate\Support\Facades\Hash;
 
 class DoctorService extends BaseService
 {
-    public function __construct(Doctor $doctor)
+    protected UserService $userService;
+
+    public function __construct(Doctor $doctor, UserService $userService)
     {
         parent::__construct($doctor);
+        $this->userService = $userService;
     }
 
     public function create(array $data): Model
     {
+        $defaultRole = Role::where('role_name', 'Врач')->firstOrFail();
+        $data['role_id'] = $defaultRole->id;
         return DB::transaction(function () use ($data) {
-            $doctor = parent::create($data);
+            $user = $this->userService->create($data);
+
+            $doctor = $user->doctor()->create([
+                'license' => $data['license'],
+            ]);
 
             if (!empty($data['specialization_ids'])) {
                 $doctor->specializations()->sync($data['specialization_ids']);
             }
 
-            return $doctor->load('specializations');
+            return $doctor->load(['user', 'specializations']);
         });
     }
 
     public function update(int $id, array $data): Model
     {
         return DB::transaction(function () use ($id, $data) {
-            $doctor = parent::update($id, $data);
+            $doctor = $this->find($id);
+
+            $this->userService->update($doctor->user_id, $data);
+
+            $doctor->update(array_filter([
+                'license' => $data['license'] ?? null,
+            ]));
 
             if (isset($data['specialization_ids'])) {
                 $doctor->specializations()->sync($data['specialization_ids']);
             }
 
-            return $doctor->load('specializations');
-        });
-    }
-
-    public function createDoctorWithUser(array $data): Doctor
-    {
-        return DB::transaction(function () use ($data) {
-            // 1. Создаем пользователя
-            $user = User::create([
-                'firstname' => $data['firstname'],
-                'lastname' => $data['lastname'],
-                'patronymic' => $data['patronymic'],
-                'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-                'role_id' => $data['role_id'],
-            ]);
-
-            // 2. Создаем профиль врача, привязывая user_id
-            $doctor = Doctor::create([
-                'user_id' => $user->id,
-                'license' => $data['license'],
-            ]);
-
-            // 3. Если есть специальности, привязываем их
-            if (!empty($data['specialization_ids'])) {
-                $doctor->specializations()->sync($data['specialization_ids']);
-            }
-
-            return $doctor->load('user', 'specializations');
+            return $doctor->load(['user', 'specializations']);
         });
     }
 }

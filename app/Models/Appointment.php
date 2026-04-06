@@ -12,14 +12,14 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Appointment
- * 
+ *
  * @property int $id
  * @property int|null $patient_id
  * @property int|null $status_id
  * @property int|null $schedule_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * 
+ *
  * @property Patient|null $patient
  * @property Status|null $status
  * @property Schedule|null $schedule
@@ -64,8 +64,8 @@ class Appointment extends Model
 		return $this->hasOne(MedicalRecord::class);
 	}
 
-	public function reviews()
+	public function review()
 	{
-		return $this->hasMany(Review::class);
+		return $this->hasOne(Review::class);
 	}
 }

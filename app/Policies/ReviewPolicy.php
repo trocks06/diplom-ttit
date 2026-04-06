@@ -17,6 +17,11 @@ class ReviewPolicy
         return $user->id === $appointment->user_id && $appointment->status === 'completed';
     }
 
+    public function update(User $user, Review $review): bool
+    {
+        return $user->id === $review->appointment->user_id;
+    }
+
     /**
      * Удаление: Обычно только автор или Админ
      */

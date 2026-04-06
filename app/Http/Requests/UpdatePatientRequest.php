@@ -13,21 +13,22 @@ class UpdatePatientRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'address' => ['sometimes', 'string', 'max:255'],
-            'gender' => ['sometimes', 'string', 'in:Мужской,Женский'],
-            'allergies' => ['nullable', 'string', 'max:500'],
-            'chronic_diseases' => ['nullable', 'string', 'max:500'],
-            'birth_date' => ['sometimes', 'date', 'date_format:d-m-Y', 'before:today'],
-        ];
-    }
+        $patient = $this->route('patient');
+        $userId = $patient ? $patient->user_id : null;
 
-    public function messages(): array
-    {
         return [
-            'gender.in' => 'Пол может быть: Мужской, Женский.',
-            'birth_date.date' => 'Дата рождения должна быть корректной датой и соответствовать формату: дд.мм.гггг.',
-            'birth_date.before' => 'Дата рождения не может быть позже сегодняшнего дня.',
+            'firstname'  => ['sometimes', 'required', 'string', 'max:100'],
+            'lastname'   => ['sometimes', 'required', 'string', 'max:100'],
+            'patronymic' => ['nullable', 'string', 'max:100'],
+            'phone'      => ['sometimes', 'required', 'string', 'max:20', 'unique:users,phone,' . $userId],
+            'email'      => ['sometimes', 'required', 'string', 'email', 'max:150', 'unique:users,email,' . $userId],
+            'password'   => ['nullable', 'string', 'min:8'],
+
+            'address'          => ['sometimes', 'required', 'string', 'max:255'],
+            'gender'           => ['sometimes', 'required', 'string', 'in:Мужской,Женский'],
+            'allergies'        => ['nullable', 'string', 'max:500'],
+            'chronic_diseases' => ['nullable', 'string', 'max:500'],
+            'birth_date'       => ['sometimes', 'required', 'date', 'date_format:d.m.Y', 'before:today'],
         ];
     }
 }
