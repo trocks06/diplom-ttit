@@ -26,7 +26,6 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        // Берем ID того, кто сейчас в системе
         $notifications = $this->service->getForUser(auth()->id());
         return NotificationResource::collection($notifications);
     }

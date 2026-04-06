@@ -17,8 +17,12 @@ class NotificationResource extends JsonResource
         return [
             "id" => $this->id,
             "user_id" => $this->user_id,
+            'text' => $this->when(
+                $request->routeIs('notifications.show'),
+                $this->text
+            ),
             "is_read" => $this->is_read ? "Прочитано" : "Непрочитано",
-            "created_at" => $this->created_at?->format('d.m.Y H:i:s'),
+            "created_at" => $this->created_at?->format('d.m.Y H:i'),
         ];
     }
 }
