@@ -13,7 +13,7 @@ class ScheduleResource extends JsonResource
             'doctor_id' => $this->doctor_id,
             'start_time' => $this->start_time->format('d.m.Y H:i'),
             'end_time' => $this->end_time->format('d.m.Y H:i'),
-            'is_booked' => $this->appointments()->exists(),
+            'is_booked' => $this->appointments()->exists() ? "Занят" : "Незанят",
         ];
     }
 }

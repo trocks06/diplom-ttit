@@ -2,25 +2,35 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreScheduleRequest extends FormRequest
+class UpdateScheduleRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
-            'doctor_id' => ['required', 'integer', 'exists:doctors,id'],
-
             'start_time' => [
-                'required',
+                'sometimes',
                 'date',
                 'date_format:d.m.Y H:i',
                 'after:now'
             ],
             'end_time' => [
-                'required',
+                'sometimes',
                 'date',
                 'date_format:d.m.Y H:i',
                 'after:start_time'
@@ -31,7 +41,6 @@ class StoreScheduleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'doctor_id.exists' => 'Выбранный врач не существует в системе.',
             'start_time.date_format' => 'Формат даты должен быть: дд.мм.гггг чч:мм (например, 05.12.2026 12:00).',
             'start_time.after' => 'Нельзя назначить прием на прошедшее время.',
             'end_time.after' => 'Время окончания должно быть позже времени начала.',

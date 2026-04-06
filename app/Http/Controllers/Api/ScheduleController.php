@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreScheduleRequest;
+use App\Http\Requests\UpdateScheduleRequest;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use App\Models\Doctor;
@@ -23,8 +24,8 @@ class ScheduleController extends Controller
 
     public function index()
     {
-        $roles = $this->service->getAll();
-        return ScheduleResource::collection($roles);
+        $schedules = $this->service->getAll();
+        return ScheduleResource::collection($schedules);
     }
 
     public function show(Schedule $schedule)
@@ -38,12 +39,21 @@ class ScheduleController extends Controller
         return new ScheduleResource($schedule);
     }
 
+    public function update(UpdateScheduleRequest $request, Schedule $schedule)
+    {
+        $updatedSchedule = $this->service->update($schedule->id, $request->validated());
+        return new ScheduleResource($updatedSchedule);
+    }
+
     public function destroy(Schedule $schedule)
     {
-        if ($schedule->appointments()->exists()) {
-            return response()->json(['error' => 'Нельзя удалить расписание, на которое записаны пациенты.'], 422);
+        if ($schedule->is_booked) {
+            return response()->json([
+                'message' => 'Нельзя удалить забронированный слот.'
+            ], 422);
         }
+
         $this->service->delete($schedule->id);
-        return response()->json(['message' => 'Слот расписания удален.']);
+        return response()->json(['message' => 'Слот успешно удален.']);
     }
 }

@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('profile')->group(function () {
         Route::get('/', [UserController::class, 'me']);
-        Route::post('/avatar', [UserController::class, 'updateAvatar']);
+        Route::patch('/avatar', [UserController::class, 'updateAvatar']);
     });
 
     // Аккаунт и безопасность
@@ -55,9 +55,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Верификация Email
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail'])->middleware('throttle:6,1');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
-
-    // Профиль текущего пользователя (удобно для фронтенда)
-    Route::get('me', [UserController::class, 'me']);
 
     // Уведомления (мы уже обсудили логику внутри контроллера/политики)
     Route::apiResource('notifications', NotificationController::class);
