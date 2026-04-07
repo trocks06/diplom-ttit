@@ -29,7 +29,8 @@ class ScheduleService extends BaseService
                 'start_time' => 'Нельзя менять время у слота, на который уже записан пациент.',
             ]);
         }
-        $this->checkOverlapping($data['doctor_id'], $data['start_time'], $data['end_time'], $id);
+        $doctorId = $data['doctor_id'] ?? $slot->doctor_id;
+        $this->checkOverlapping($doctorId, $data['start_time'], $data['end_time'], $id);
         return parent::update($id, $data);
     }
 

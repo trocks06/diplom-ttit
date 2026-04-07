@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Appointment;
 use App\Models\Review;
 use App\Http\Requests\StoreReviewRequest;
@@ -35,7 +36,7 @@ class ReviewController extends Controller
         return new ReviewResource($review->load(['appointment.user', 'appointment.doctor']));
     }
 
-    public function update(StoreReviewRequest $request, Review $review)
+    public function update(UpdateReviewRequest $request, Review $review)
     {
         // 1. Проверяем права через Policy
         $this->authorize('update', $review);
@@ -55,7 +56,7 @@ class ReviewController extends Controller
         $this->authorize('create', [Review::class, $appointment]);
 
         // Проверка на дубликат
-        if ($appointment->review()->exists()) {
+        if ($appointment->reviews()->exists()) {
             return response()->json(['message' => 'Отзыв уже существует'], 422);
         }
 

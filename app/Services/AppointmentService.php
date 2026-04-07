@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Status;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
@@ -16,10 +17,10 @@ class AppointmentService extends BaseService
 
     public function create(array $data): Model
     {
-        // 1. Проверяем, не занято ли уже это время
+
         $isBooked = $this->model->where('schedule_id', $data['schedule_id'])
             ->whereHas('status', function($q) {
-                $q->where('status_name', '!=', 'Отменен'); // Игнорируем отмененные
+                $q->whereNotIn('status_name', ['Отменен', 'Отменён']);
             })->exists();
 
         if ($isBooked) {
@@ -27,12 +28,26 @@ class AppointmentService extends BaseService
                 'schedule_id' => 'Этот слот в расписании уже забронирован.',
             ]);
         }
-
-        // 2. Устанавливаем статус по умолчанию (например, 'Scheduled')
-        // Предполагаем, что у тебя в таблице statuses есть такая запись
         $defaultStatus = Status::where('status_name', 'Запланирован')->first();
         $data['status_id'] = $defaultStatus ? $defaultStatus->id : null;
 
         return parent::create($data);
+    }
+
+    public function getForPatient(int $patientId): Collection
+    {
+        return $this->model->where('patient_id', $patientId)
+            ->with(['schedule.doctor.user', 'status'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getForDoctor(int $doctorId): Collection
+    {
+        return $this->model->whereHas('schedule', function ($q) use ($doctorId) {
+            $q->where('doctor_id', $doctorId);
+        })->with(['schedule.doctor.user', 'patient.user', 'status'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

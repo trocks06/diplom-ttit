@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\EmailVerificationController;
+use App\Http\Controllers\Api\MedicalFileController;
+use App\Http\Controllers\Api\MedicalRecordController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\ResetPasswordController;
@@ -45,40 +47,29 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('profile')->group(function () {
         Route::get('/', [UserController::class, 'me']);
+        Route::patch('/', [UserController::class, 'updateProfile']);
         Route::patch('/avatar', [UserController::class, 'updateAvatar']);
+        Route::delete('/', [UserController::class, 'deleteMe']);
     });
-
-    // Аккаунт и безопасность
+    Route::get('/my-appointments', [AppointmentController::class, 'myAppointments']);
     Route::get('logout', [AuthController::class, 'logout']);
     Route::post('change-password', [AuthController::class, 'changePassword']);
-
-    // Верификация Email
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail'])->middleware('throttle:6,1');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
-
-    // Уведомления (мы уже обсудили логику внутри контроллера/политики)
     Route::apiResource('notifications', NotificationController::class);
-
-    // Записи на прием
     Route::apiResource('appointments', AppointmentController::class);
     Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus']);
-
-    // Отзывы
-    // Создание через вложенный роут (как ты хотел)
     Route::post('appointments/{appointment}/review', [ReviewController::class, 'store']);
-    // Остальные действия через стандартный ресурс
+    Route::apiResource('medical-records', MedicalRecordController::class)->only(['show', 'update', 'destroy']);
+    Route::post('/appointments/{appointment}/medical-record', [MedicalRecordController::class, 'store']);
+    Route::post('/medical-records/{medical_record}/files', [MedicalFileController::class, 'store']);
+    Route::delete('/medical-files/{medical_file}', [MedicalFileController::class, 'destroy']);
     Route::apiResource('reviews', ReviewController::class)->only(['index', 'show', 'update', 'destroy']);
-
-    // Пользователи, Пациенты, Врачи
     Route::apiResource('users', UserController::class);
     Route::apiResource('patients', PatientController::class);
     Route::apiResource('doctors', DoctorController::class);
-
-    // Расписание и роли
     Route::apiResource('schedules', ScheduleController::class);
     Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
-
-    // Дополнительные методы для специальностей (создание/удаление только для админа через политики)
     Route::apiResource('specializations', SpecializationController::class)->except(['index', 'show']);
 });
 

@@ -23,10 +23,7 @@ class PatientService extends BaseService
         $defaultRole = Role::where('role_name', 'Пациент')->firstOrFail();
         $data['role_id'] = $defaultRole->id;
         return DB::transaction(function () use ($data) {
-            // Используем UserService для создания базового аккаунта
             $user = $this->userService->create($data);
-
-            // Создаем профиль пациента
             return $user->patient()->create([
                 'address'          => $data['address'],
                 'gender'           => $data['gender'],

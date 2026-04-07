@@ -29,9 +29,6 @@ class StoreUserRequest extends FormRequest
             "phone" => ['required', 'string', 'max:20', 'unique:users,phone'],
             "email" => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             "password" => ['required', 'string', 'min:8'],
-            "avatar" => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:2048'],
-            "role_id" => ['required', 'integer', 'exists:roles,id'],
-            "verified" => ['sometimes', 'boolean'],
         ];
     }
 }

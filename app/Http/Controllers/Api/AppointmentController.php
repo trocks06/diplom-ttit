@@ -24,15 +24,14 @@ class AppointmentController extends Controller
 
     public function index()
     {
-        $doctors = $this->service->getAll();
-        return AppointmentResource::collection($doctors);
+        $appointments = $this->service->getAll();
+        return AppointmentResource::collection($appointments);
     }
 
     public function store(StoreAppointmentRequest $request)
     {
         $data = $request->validated();
 
-        // Если это пациент, принудительно ставим его ID
         if (auth()->user()?->role->role_name === 'Пациент') {
             $data['patient_id'] = auth()->user()->patient->id;
         }
@@ -54,5 +53,21 @@ class AppointmentController extends Controller
         ]);
 
         return new AppointmentResource($updated->load(['status', 'schedule.doctor.user']));
+    }
+
+    public function myAppointments()
+    {
+        $user = auth()->user();
+        $roleName = $user->role->role_name;
+
+        if ($roleName === 'Пациент') {
+            $appointments = $this->service->getForPatient($user->patient->id);
+        } elseif ($roleName === 'Врач') {
+            $appointments = $this->service->getForDoctor($user->doctor->id);
+        } else {
+            $appointments = $this->service->getAll();
+        }
+
+        return AppointmentResource::collection($appointments);
     }
 }

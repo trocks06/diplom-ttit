@@ -22,8 +22,6 @@ class AuthService
 
     public function register(array $data): User
     {
-        $defaultRole = Role::where('role_name', 'Пациент')->firstOrFail();
-        $data['role_id'] = $defaultRole->id;
         $patient = $this->patientService->create($data);
         return $patient->user;
     }
