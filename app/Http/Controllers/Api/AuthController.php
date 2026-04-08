@@ -26,7 +26,10 @@ class AuthController extends Controller
     {
         $user = $this->authService->register($request->validated());
         $token = $user->createToken("auth_token")->plainTextToken;
-        $user->load('patient');
+        $user->load(['patient', 'role']);
+
+        $user->sendEmailVerificationNotification();
+
         return (new UserResource($user))->additional(['token' => $token]);
     }
 
@@ -34,6 +37,7 @@ class AuthController extends Controller
     {
         try {
             $result = $this->authService->login($request->validated());
+            $result['user']->load('role', 'patient', 'doctor');
             return (new UserResource($result['user']))->additional(['token' => $result['token']]);
         } catch (ValidationException $e) {
             return response()->json(['message' => $e->getMessage()], 401);

@@ -20,7 +20,7 @@ class DoctorController extends Controller
 
     public function index()
     {
-        $doctors = $this->doctorService->getAll();
+        $doctors = $this->doctorService->getAll(['user']);
         return DoctorResource::collection($doctors);
     }
 

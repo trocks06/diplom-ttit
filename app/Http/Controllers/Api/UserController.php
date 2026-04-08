@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateAvatarRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -21,13 +22,21 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = $this->userService->getAll();
+        $users = $this->userService->getAll(['role']);
         return UserResource::collection($users);
+    }
+
+    public function me()
+    {
+        $user = auth()->user();
+        $user->load(['role', 'patient', 'doctor']);
+        return new UserResource($user);
     }
 
     public function show(User $user)
     {
-        return new UserResource($user->load(['patient', 'doctor']));
+        $user->load(['role', 'patient', 'doctor']);
+        return new UserResource($user);
     }
 
     public function updateProfile(UpdateProfileRequest $request)
@@ -36,47 +45,40 @@ class UserController extends Controller
             auth()->user(),
             $request->validated()
         );
-
+        $user->load(['role', 'patient', 'doctor']);
         return response()->json([
-            'message' => 'Профиль обновлен',
+            'message' => 'Профиль обновлён',
             'data' => new UserResource($user)
         ]);
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
         $this->userService->delete($user->id);
         return response()->json([
-            "message" => "Аккаунт успешно удален."
+            "message" => "Аккаунт успешно удалён."
         ]);
     }
-
-    public function me()
-    {
-        return new UserResource(auth()->user());
-    }
-
-
 
     public function updateAvatar(UpdateAvatarRequest $request)
     {
         $path = $this->userService->updateAvatar(auth()->id(), $request->file('avatar'));
         return response()->json([
-            'message' => 'Аватар успешно обновлен',
+            'message' => 'Аватар успешно обновлён',
             'avatar_url' => $path
         ]);
     }
 
-    public function deleteProfile()
+    /**
+     * Удаление своего аккаунта (для всех ролей)
+     */
+    public function deleteMe(): JsonResponse
     {
-        $user = auth()->user();
-        if ($user->role->role_name !== 'Пациент') {
-            return response()->json(['message' => 'Только пациент может удалить свой профиль.'], 403);
+        try {
+            $this->userService->deleteSelf(auth()->user());
+            return response()->json(['message' => 'Ваш профиль удалён.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-        if ($user->patient->appointments()->whereHas('status', fn($q) => $q->where('status_name', 'Запланирован'))->exists()) {
-            return response()->json(['message' => 'У вас есть активные записи.'], 422);
-        }
-        $user->delete();
-        return response()->json(['message' => 'Профиль удалён.']);
     }
 }

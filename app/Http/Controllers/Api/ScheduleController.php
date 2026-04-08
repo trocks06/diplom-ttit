@@ -7,9 +7,9 @@ use App\Http\Requests\StoreScheduleRequest;
 use App\Http\Requests\UpdateScheduleRequest;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
-use App\Models\Doctor;
 use App\Services\ScheduleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\ValidationException;
 
 class ScheduleController extends Controller
 {
@@ -24,7 +24,7 @@ class ScheduleController extends Controller
 
     public function index()
     {
-        $schedules = $this->service->getAll();
+        $schedules = $this->service->getAll(['doctor.user', 'appointments.status']);
         return ScheduleResource::collection($schedules);
     }
 
@@ -47,13 +47,11 @@ class ScheduleController extends Controller
 
     public function destroy(Schedule $schedule)
     {
-        if ($schedule->is_booked) {
-            return response()->json([
-                'message' => 'Нельзя удалить забронированный слот.'
-            ], 422);
+        try {
+            $this->service->deleteSlot($schedule);
+            return response()->json(['message' => 'Слот успешно удален.']);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        $this->service->delete($schedule->id);
-        return response()->json(['message' => 'Слот успешно удален.']);
     }
 }

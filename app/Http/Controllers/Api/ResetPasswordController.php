@@ -44,6 +44,7 @@ class ResetPasswordController extends Controller
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
                 ])->save();
+                $user->tokens()->delete();
 
                 event(new PasswordReset($user));
             }

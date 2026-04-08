@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/MedicalRecordController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -10,10 +8,14 @@ use App\Http\Resources\MedicalRecordResource;
 use App\Models\Appointment;
 use App\Models\MedicalRecord;
 use App\Services\MedicalRecordService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MedicalRecordController extends Controller
 {
+    use AuthorizesRequests;
+
     protected MedicalRecordService $service;
 
     public function __construct(MedicalRecordService $service)
@@ -21,10 +23,8 @@ class MedicalRecordController extends Controller
         $this->service = $service;
     }
 
-    // Создание записи в медкарте для конкретного приёма (врач)
     public function store(StoreMedicalRecordRequest $request, Appointment $appointment)
     {
-        // Проверка прав: только врач, который вёл приём, или админ
         $this->authorize('create', [MedicalRecord::class, $appointment]);
 
         $data = $request->validated();
@@ -34,14 +34,12 @@ class MedicalRecordController extends Controller
         return new MedicalRecordResource($record->load('medical_files'));
     }
 
-    // Просмотр медкарты пациента (пациент или врач)
     public function show(MedicalRecord $medicalRecord)
     {
         $this->authorize('view', $medicalRecord);
         return new MedicalRecordResource($medicalRecord->load(['appointment.schedule.doctor', 'medical_files']));
     }
 
-    // Обновление (врач или админ)
     public function update(Request $request, MedicalRecord $medicalRecord)
     {
         $this->authorize('update', $medicalRecord);
@@ -49,7 +47,6 @@ class MedicalRecordController extends Controller
         return new MedicalRecordResource($medicalRecord);
     }
 
-    // Удаление (админ)
     public function destroy(MedicalRecord $medicalRecord)
     {
         $this->authorize('delete', $medicalRecord);
@@ -59,12 +56,11 @@ class MedicalRecordController extends Controller
 
     public function myRecords()
     {
-        $user = auth()->user();
-        if ($user->role->role_name !== 'Пациент') {
-            return response()->json(['message' => 'Доступ только для пациентов'], 403);
+        try {
+            $records = $this->service->getForCurrentUser(auth()->user());
+            return MedicalRecordResource::collection($records);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
         }
-
-        $records = $this->service->getForPatient($user->patient->id);
-        return MedicalRecordResource::collection($records);
     }
 }

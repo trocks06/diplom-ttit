@@ -12,9 +12,9 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (!$user->role || !in_array($user->role->role_name, $roles)) {
+        if (!$user || !$user->role || !in_array($user->role->role_name, $roles)) {
             return response()->json([
-                'message' => 'Доступ запрещен. Ваша роль: ' . ($user->role->role_name ?? 'Не найдена')
+                'message' => 'Доступ запрещён. Ваша роль: ' . ($user->role->role_name ?? 'Не найдена')
             ], 403);
         }
 

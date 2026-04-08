@@ -24,19 +24,20 @@ class AppointmentController extends Controller
 
     public function index()
     {
-        $appointments = $this->service->getAll();
+        $appointments = $this->service->getAll([
+            'schedule.doctor.user',
+            'status',
+            'patient.user'
+        ]);
         return AppointmentResource::collection($appointments);
     }
 
     public function store(StoreAppointmentRequest $request)
     {
-        $data = $request->validated();
-
-        if (auth()->user()?->role->role_name === 'Пациент') {
-            $data['patient_id'] = auth()->user()->patient->id;
-        }
-
-        $appointment = $this->service->create($data);
+        $appointment = $this->service->createFromRequest(
+            $request->validated(),
+            auth()->user()
+        );
         return new AppointmentResource($appointment->load(['schedule.doctor.user', 'status']));
     }
 
@@ -47,11 +48,9 @@ class AppointmentController extends Controller
 
     public function updateStatus(UpdateAppointmentStatusRequest $request, Appointment $appointment)
     {
-
         $updated = $this->service->update($appointment->id, [
             'status_id' => $request->status_id
         ]);
-
         return new AppointmentResource($updated->load(['status', 'schedule.doctor.user']));
     }
 

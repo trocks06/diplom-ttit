@@ -8,10 +8,13 @@ use App\Http\Resources\MedicalFileResource;
 use App\Models\MedicalFile;
 use App\Models\MedicalRecord;
 use App\Services\MedicalFileService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class MedicalFileController extends Controller
 {
+    use AuthorizesRequests;
+
     protected MedicalFileService $service;
 
     public function __construct(MedicalFileService $service)

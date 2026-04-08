@@ -24,14 +24,41 @@ class ScheduleService extends BaseService
     public function update($id, array $data): Model
     {
         $slot = $this->find($id);
-        if ($slot->is_booked && (isset($data['start_time']) || isset($data['end_time']))) {
+
+        // Проверяем, есть ли активные записи на этот слот
+        $hasActiveAppointments = $slot->appointments()
+            ->whereHas('status', function ($q) {
+                $q->whereNotIn('status_name', ['Отменен', 'Отменён']);
+            })->exists();
+
+        if ($hasActiveAppointments && (isset($data['start_time']) || isset($data['end_time']))) {
             throw ValidationException::withMessages([
                 'start_time' => 'Нельзя менять время у слота, на который уже записан пациент.',
             ]);
         }
+
         $doctorId = $data['doctor_id'] ?? $slot->doctor_id;
-        $this->checkOverlapping($doctorId, $data['start_time'], $data['end_time'], $id);
+        $startTime = $data['start_time'] ?? $slot->start_time->format('d.m.Y H:i');
+        $endTime = $data['end_time'] ?? $slot->end_time->format('d.m.Y H:i');
+
+        $this->checkOverlapping($doctorId, $startTime, $endTime, $id);
+
         return parent::update($id, $data);
+    }
+
+    public function deleteSlot(Schedule $schedule): void
+    {
+        $hasActive = $schedule->appointments()
+            ->whereHas('status', fn($q) => $q->whereNotIn('status_name', ['Отменен', 'Отменён']))
+            ->exists();
+
+        if ($hasActive) {
+            throw ValidationException::withMessages([
+                'schedule' => ['Нельзя удалить забронированный слот.'],
+            ]);
+        }
+
+        $this->delete($schedule->id);
     }
 
     protected function checkOverlapping($doctorId, $start, $end, $excludeId = null)

@@ -13,7 +13,7 @@ class AppointmentPolicy
      */
     public function before(User $user, string $ability): ?bool
     {
-        if ($user->role?->role_name === 'admin') {
+        if ($user->role?->role_name === 'Администратор') {
             return true;
         }
         return null;

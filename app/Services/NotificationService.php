@@ -21,7 +21,6 @@ class NotificationService extends BaseService
             return $query->with('user')->latest()->get();
         }
 
-        // Обычному пользователю — только его записи
         return $query->where('user_id', $userId)
             ->latest()
             ->get();

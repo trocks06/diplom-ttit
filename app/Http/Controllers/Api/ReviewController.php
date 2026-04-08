@@ -27,7 +27,10 @@ class ReviewController extends Controller
      */
     public function index()
     {
-        $reviews = $this->service->getAll();
+        $reviews = $this->service->getAll([
+            'appointment.patient.user',
+            'appointment.schedule.doctor.user'
+        ]);
         return ReviewResource::collection($reviews);
     }
 
@@ -52,20 +55,9 @@ class ReviewController extends Controller
      */
     public function store(StoreReviewRequest $request, Appointment $appointment)
     {
-        // Проверка доступа через Policy
         $this->authorize('create', [Review::class, $appointment]);
 
-        // Проверка на дубликат
-        if ($appointment->reviews()->exists()) {
-            return response()->json(['message' => 'Отзыв уже существует'], 422);
-        }
-
-        // Создаем отзыв, привязывая его к ID из URL
-        $review = $this->service->create([
-            'appointment_id' => $appointment->id,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-        ]);
+        $review = $this->service->createForAppointment($appointment, $request->validated());
 
         return new ReviewResource($review);
     }

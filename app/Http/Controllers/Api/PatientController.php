@@ -22,7 +22,7 @@ class PatientController extends Controller
      */
     public function index()
     {
-        $patients = $this->patientService->getAll();
+        $patients = $this->patientService->getAll(['user']);
         return PatientResource::collection($patients);
     }
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Status;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -15,9 +16,25 @@ class AppointmentService extends BaseService
         parent::__construct($model);
     }
 
+    /**
+     * Создание записи с учётом роли пользователя.
+     */
+    public function createFromRequest(array $data, User $user): Model
+    {
+        if ($user->role->role_name === 'Пациент') {
+            if (!$user->patient) {
+                throw ValidationException::withMessages([
+                    'user' => ['Профиль пациента не найден.'],
+                ]);
+            }
+            $data['patient_id'] = $user->patient->id;
+        }
+
+        return $this->create($data);
+    }
+
     public function create(array $data): Model
     {
-
         $isBooked = $this->model->where('schedule_id', $data['schedule_id'])
             ->whereHas('status', function($q) {
                 $q->whereNotIn('status_name', ['Отменен', 'Отменён']);

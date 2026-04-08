@@ -24,13 +24,15 @@ class PatientService extends BaseService
         $data['role_id'] = $defaultRole->id;
         return DB::transaction(function () use ($data) {
             $user = $this->userService->create($data);
-            return $user->patient()->create([
+            $patient = $user->patient()->create([
                 'address'          => $data['address'],
                 'gender'           => $data['gender'],
                 'birth_date'       => $data['birth_date'],
                 'allergies'        => $data['allergies'] ?? null,
                 'chronic_diseases' => $data['chronic_diseases'] ?? null,
-            ])->load('user');
+            ]);
+            $patient->load(['user.role']); // ← подгружаем user.role
+            return $patient;
         });
     }
 

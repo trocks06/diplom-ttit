@@ -56,17 +56,17 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
 		'password'
 	];
 
-	protected $fillable = [
-		'firstname',
-		'lastname',
-		'patronymic',
-		'phone',
-		'email',
-		'password',
-		'avatar',
-		'role_id',
+    protected $fillable = [
+        'firstname',
+        'lastname',
+        'patronymic',
+        'phone',
+        'email',
+        'password',
+        'avatar',
+        'role_id',
         'email_verified_at'
-	];
+    ];
 
 	public function role()
 	{

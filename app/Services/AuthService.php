@@ -36,8 +36,9 @@ class AuthService
 
         $user = Auth::user();
         $user->tokens()->delete();
-
         $token = $user->createToken("auth_token")->plainTextToken;
+
+        $user->load('role');
 
         return ['user' => $user, 'token' => $token];
     }

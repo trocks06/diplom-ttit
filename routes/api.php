@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MedicalFileController;
 use App\Http\Controllers\Api\MedicalRecordController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ResetPasswordController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\RoleController;
@@ -15,62 +16,99 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SpecializationController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Публичные роуты (Доступны всем)
-|--------------------------------------------------------------------------
-*/
+
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
-// Справочники (обычно нужны при регистрации или поиске врача без авторизации)
-Route::get('specializations', [SpecializationController::class, 'index']);
-Route::get('specializations/{specialization}', [SpecializationController::class, 'show']);
-Route::get('statuses', [StatusController::class, 'index']);
+Route::post('forgot-password', [ResetPasswordController::class, 'sendResetLinkEmail']);
+Route::post('reset-password', [ResetPasswordController::class, 'reset']);
 
-// Восстановление пароля
-Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLinkEmail'])->middleware('guest');
-Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->middleware('guest');
+Route::apiResource('specializations', SpecializationController::class)->only(['index', 'show']);
+Route::apiResource('statuses', StatusController::class)->only(['index', 'show']);
+Route::apiResource('doctors', DoctorController::class)->only(['index', 'show']);
+Route::apiResource('reviews', ReviewController::class)->only(['index', 'show']);
 
-
-/*
-|--------------------------------------------------------------------------
-| Защищенные роуты (Только для авторизованных auth:sanctum)
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('profile')->group(function () {
         Route::get('/', [UserController::class, 'me']);
         Route::patch('/', [UserController::class, 'updateProfile']);
-        Route::patch('/avatar', [UserController::class, 'updateAvatar']);
+        Route::patch('avatar', [UserController::class, 'updateAvatar']);
         Route::delete('/', [UserController::class, 'deleteMe']);
     });
-    Route::get('/my-appointments', [AppointmentController::class, 'myAppointments']);
-    Route::get('logout', [AuthController::class, 'logout']);
+
+    // Мои записи на приём (пациент и врач видят свои)
+    Route::get('my-appointments', [AppointmentController::class, 'myAppointments']);
+
+    // Выход и смена пароля
+    Route::post('logout', [AuthController::class, 'logout']);
     Route::post('change-password', [AuthController::class, 'changePassword']);
-    Route::post('/email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail'])->middleware('throttle:6,1');
-    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
+
+    // Верификация email
+    Route::post('email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail'])
+        ->middleware('throttle:6,1');
+    Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware('signed')->name('verification.verify');
+
+    // Уведомления (каждый видит свои, админ – все)
     Route::apiResource('notifications', NotificationController::class);
+
+    // Записи на приём
     Route::apiResource('appointments', AppointmentController::class);
     Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus']);
     Route::post('appointments/{appointment}/review', [ReviewController::class, 'store']);
+
+    // Медицинские записи и файлы
     Route::apiResource('medical-records', MedicalRecordController::class)->only(['show', 'update', 'destroy']);
-    Route::post('/appointments/{appointment}/medical-record', [MedicalRecordController::class, 'store']);
-    Route::post('/medical-records/{medical_record}/files', [MedicalFileController::class, 'store']);
-    Route::delete('/medical-files/{medical_file}', [MedicalFileController::class, 'destroy']);
-    Route::apiResource('reviews', ReviewController::class)->only(['index', 'show', 'update', 'destroy']);
-    Route::apiResource('users', UserController::class);
-    Route::apiResource('patients', PatientController::class);
-    Route::apiResource('doctors', DoctorController::class);
-    Route::apiResource('schedules', ScheduleController::class);
+    Route::post('appointments/{appointment}/medical-record', [MedicalRecordController::class, 'store']);
+    Route::post('medical-records/{medical_record}/files', [MedicalFileController::class, 'store']);
+    Route::delete('medical-files/{medical_file}', [MedicalFileController::class, 'destroy']);
+
+    // Отзывы (изменение/удаление только автором или админом)
+    Route::apiResource('reviews', ReviewController::class)->only(['update', 'destroy']);
+
+    // Пользователи (просмотр всем авторизованным, удаление только админу)
+    Route::apiResource('users', UserController::class)->only(['index', 'show']);
+    Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('role:Администратор');
+
+    // Пациенты (управление только админ)
+    Route::apiResource('patients', PatientController::class)->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+    // Просмотр списка и конкретного пациента доступен всем авторизованным
+    Route::get('patients', [PatientController::class, 'index']);
+    Route::get('patients/{patient}', [PatientController::class, 'show']);
+
+    // Врачи (управление только админ)
+    Route::apiResource('doctors', DoctorController::class)->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+
+    // Расписание (управление только админ)
+    Route::apiResource('schedules', ScheduleController::class)->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+    // Просмотр слотов доступен всем авторизованным
+    Route::get('schedules', [ScheduleController::class, 'index']);
+    Route::get('schedules/{schedule}', [ScheduleController::class, 'show']);
+
+    // Роли (только просмотр)
     Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
-    Route::apiResource('specializations', SpecializationController::class)->except(['index', 'show']);
+
+    // Специализации (управление только админ)
+    Route::apiResource('specializations', SpecializationController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+
+    // Статусы (управление только админ)
+    Route::apiResource('statuses', StatusController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+
+    // Отчёты (только админ)
+    Route::middleware('role:Администратор')->prefix('reports')->group(function () {
+        Route::get('patients', [ReportController::class, 'patients']);
+        Route::get('doctors', [ReportController::class, 'doctors']);
+        Route::get('canceled', [ReportController::class, 'canceled']);
+        Route::get('satisfaction', [ReportController::class, 'satisfaction']);
+    });
 });
-
-

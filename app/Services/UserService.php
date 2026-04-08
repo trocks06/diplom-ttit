@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @extends BaseService<User>
@@ -45,6 +46,51 @@ class UserService extends BaseService
 
             return $user->load(['patient', 'doctor']);
         });
+    }
+
+    /**
+     * Удаление текущего пользователя с проверками по ролям.
+     * @throws ValidationException
+     */
+    public function deleteSelf(User $user): void
+    {
+        $role = $user->role?->role_name;
+
+        if ($role === 'Пациент') {
+            $hasActive = $user->patient?->appointments()
+                ->whereHas('status', fn($q) => $q->where('status_name', 'Запланирован'))
+                ->exists();
+            if ($hasActive) {
+                throw ValidationException::withMessages([
+                    'user' => ['У вас есть активные записи. Сначала отмените их.'],
+                ]);
+            }
+        }
+
+        if ($role === 'Врач') {
+            $hasUpcoming = $user->doctor?->schedules()
+                ->where('start_time', '>', now())
+                ->whereHas('appointments', fn($q) =>
+                $q->whereHas('status', fn($s) => $s->where('status_name', 'Запланирован'))
+                )
+                ->exists();
+            if ($hasUpcoming) {
+                throw ValidationException::withMessages([
+                    'user' => ['У вас есть предстоящие приёмы. Невозможно удалить профиль.'],
+                ]);
+            }
+        }
+
+        if ($role === 'Администратор') {
+            $adminCount = User::whereHas('role', fn($q) => $q->where('role_name', 'Администратор'))->count();
+            if ($adminCount <= 1) {
+                throw ValidationException::withMessages([
+                    'user' => ['Нельзя удалить последнего администратора.'],
+                ]);
+            }
+        }
+
+        $this->delete($user->id);
     }
 
     public function delete(int $id): bool

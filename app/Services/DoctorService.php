@@ -34,7 +34,8 @@ class DoctorService extends BaseService
                 $doctor->specializations()->sync($data['specialization_ids']);
             }
 
-            return $doctor->load(['user', 'specializations']);
+            $doctor->load(['user.role', 'specializations']); // ← подгружаем role
+            return $doctor;
         });
     }
 

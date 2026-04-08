@@ -12,12 +12,16 @@ class ReviewResource extends JsonResource
         return [
             'id' => $this->id,
             'rating' => $this->rating,
-            // Комментарий только в show или если это не список всех отзывов
+            // Комментарий показываем только в детальном просмотре (show), но не в списке
             'comment' => $this->when(!$request->routeIs('reviews.index'), $this->comment),
-            'patient_name' => $this->appointment->user->first_name . ' ' . $this->appointment->user->last_name,
-            'doctor_name' => $this->appointment->schedule->doctor->first_name . ' ' . $this->appointment->schedule->doctor->last_name,
-            "created_at" => $this->created_at->format('d.m.Y H:i'),
-            "updated_at" => $this->updated_at->format('d.m.Y H:i'),
+            'patient_name' => $this->appointment?->patient?->user
+                ? $this->appointment->patient->user->firstname . ' ' . $this->appointment->patient->user->lastname
+                : 'Неизвестно',
+            'doctor_name' => $this->appointment?->schedule?->doctor?->user
+                ? $this->appointment->schedule->doctor->user->firstname . ' ' . $this->appointment->schedule->doctor->user->lastname
+                : 'Неизвестно',
+            'created_at' => $this->created_at?->format('d.m.Y H:i'),
+            'updated_at' => $this->updated_at?->format('d.m.Y H:i'),
         ];
     }
 }

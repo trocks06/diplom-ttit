@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @template TModel of Model
@@ -23,9 +24,19 @@ abstract class BaseService
         $this->model = $model;
     }
 
-    public function getAll(): Collection
+    /**
+     * Получить все записи с возможностью eager loading связей.
+     *
+     * @param array<string> $with
+     * @return Collection
+     */
+    public function getAll(array $with = []): Collection
     {
-        return $this->model->all();
+        $query = $this->model->newQuery();
+        if (!empty($with)) {
+            $query->with($with);
+        }
+        return $query->get();
     }
 
     /**
