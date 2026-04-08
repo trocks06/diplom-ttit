@@ -16,6 +16,11 @@ class NotificationPolicy
         return null;
     }
 
+    public function create(User $user): bool
+    {
+        return $user->role?->role_name === 'Администратор';
+    }
+
     public function view(User $user, Notification $notification): bool
     {
         return $user->id === $notification->user_id;

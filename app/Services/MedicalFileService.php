@@ -29,7 +29,31 @@ class MedicalFileService extends BaseService
         ]);
     }
 
-    public function delete(MedicalFile $file): void
+    public function updateFile(MedicalFile $medicalFile, UploadedFile $newFile, ?string $customName = null): MedicalFile
+    {
+        // Удаляем старый файл
+        if (Storage::disk('public')->exists($medicalFile->file_path)) {
+            Storage::disk('public')->delete($medicalFile->file_path);
+        }
+
+        $originalName = $customName ?: $newFile->getClientOriginalName();
+        $extension = $newFile->getClientOriginalExtension();
+        $filename = Str::random(40) . '.' . $extension;
+        $path = $newFile->storeAs('medical_files/' . $medicalFile->medical_record_id, $filename, 'public');
+
+        $medicalFile->update([
+            'file_name' => $originalName,
+            'file_path' => $path,
+            'file_type' => $extension,
+        ]);
+
+        return $medicalFile;
+    }
+
+    /**
+     * Удаление файла (по модели)
+     */
+    public function deleteFile(MedicalFile $file): void
     {
         if (Storage::disk('public')->exists($file->file_path)) {
             Storage::disk('public')->delete($file->file_path);

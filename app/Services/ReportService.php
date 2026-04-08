@@ -7,6 +7,7 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Review;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -16,17 +17,25 @@ class ReportService
      */
     public function patientsReport(): array
     {
-        $patients = Patient::with(['user', 'appointments'])->get()->map(function ($patient) {
-            return [
-                'patient_id' => $patient->id,
-                'name' => $patient->user->firstname . ' ' . $patient->user->lastname,
-                'total_appointments' => $patient->appointments->count(),
-                'last_appointment' => $patient->appointments->max('created_at')?->format('d.m.Y'),
-                'canceled_appointments' => $patient->appointments()
-                    ->whereHas('status', fn($q) => $q->whereIn('status_name', ['Отменен', 'Отменён']))
-                    ->count(),
-            ];
-        });
+        // Перекладываем вычисления на сторону СУБД
+        $patients = Patient::with(['user'])
+            ->withCount('appointments as total_appointments')
+            ->withCount(['appointments as canceled_appointments' => function ($query) {
+                $query->whereHas('status', fn($q) => $q->whereIn('status_name', ['Отменен', 'Отменён']));
+            }])
+            ->withMax('appointments as last_appointment_date', 'created_at')
+            ->get()
+            ->map(function ($patient) {
+                return [
+                    'patient_id' => $patient->id,
+                    'name' => $patient->user->firstname . ' ' . $patient->user->lastname,
+                    'total_appointments' => $patient->total_appointments, // Берем уже посчитанное БД
+                    'last_appointment' => $patient->last_appointment_date
+                        ? Carbon::parse($patient->last_appointment_date)->format('d.m.Y')
+                        : null,
+                    'canceled_appointments' => $patient->canceled_appointments, // Берем уже посчитанное БД
+                ];
+            });
 
         return $patients->toArray();
     }
@@ -36,28 +45,29 @@ class ReportService
      */
     public function doctorsReport(): array
     {
-        $doctors = Doctor::with(['user', 'specializations', 'schedules.appointments'])
-            ->get()
-            ->map(function ($doctor) {
-                $appointments = $doctor->schedules->flatMap->appointments;
-                return [
-                    'doctor_id' => $doctor->id,
-                    'name' => $doctor->user->firstname . ' ' . $doctor->user->lastname,
-                    'specializations' => $doctor->specializations->pluck('specialization_name'),
-                    'total_appointments' => $appointments->count(),
-                    'completed_appointments' => $appointments->where('status.status_name', 'Завершён')->count(),
-                    'average_rating' => round($doctor->averageRating(), 1),
-                    'reviews_count' => $doctor->reviewsCount(),
-                ];
-            });
+        $doctors = Doctor::with([
+            'user',
+            'specializations',
+            'schedules.appointments.status',
+            'schedules.appointments.reviews'
+        ])->get()
+        ->map(function ($doctor) {
+            $appointments = $doctor->schedules->flatMap->appointments;
+            $reviews = $appointments->flatMap->reviews;
+            return [
+                'doctor_id' => $doctor->id,
+                'name' => $doctor->user->firstname . ' ' . $doctor->user->lastname,
+                'specializations' => $doctor->specializations->pluck('specialization_name'),
+                'total_appointments' => $appointments->count(),
+                'completed_appointments' => $appointments->where('status.status_name', 'Завершён')->count(),
+                'average_rating' => round($reviews->avg('rating') ?? 0, 1),
+                'reviews_count' => $reviews->count(),
+            ];
+        });
 
         return $doctors->toArray();
     }
 
-    /**
-     * Отчёт по отменённым записям с группировкой по причинам (если есть поле reason).
-     * Пока просто список отменённых.
-     */
     public function canceledAppointmentsReport(): array
     {
         $canceled = Appointment::whereHas('status', fn($q) => $q->whereIn('status_name', ['Отменен', 'Отменён']))
@@ -75,9 +85,6 @@ class ReportService
         return $canceled->toArray();
     }
 
-    /**
-     * Отчёт по удовлетворённости: распределение рейтингов по врачам или общий.
-     */
     public function satisfactionReport(): array
     {
         $avgRating = Review::avg('rating') ?? 0;
@@ -86,7 +93,6 @@ class ReportService
             ->orderBy('rating')
             ->pluck('count', 'rating')
             ->toArray();
-
         return [
             'average_rating' => round($avgRating, 2),
             'distribution' => $ratingDistribution,

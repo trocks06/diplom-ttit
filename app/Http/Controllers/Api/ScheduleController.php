@@ -54,4 +54,17 @@ class ScheduleController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }
+
+    public function mySchedules()
+    {
+        $doctor = auth()->user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Профиль врача не найден'], 404);
+        }
+
+        $schedules = $this->service->getForDoctor($doctor->id, ['appointments.status']);
+
+        return ScheduleResource::collection($schedules);
+    }
 }

@@ -35,6 +35,7 @@ class NotificationController extends Controller
      */
     public function store(StoreNotificationRequest $request)
     {
+        $this->authorize('create', Notification::class);
         $notification = $this->service->create($request->validated());
         return new NotificationResource($notification);
     }

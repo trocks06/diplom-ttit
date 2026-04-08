@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreMedicalFileRequest extends FormRequest
+class UpdateMedicalFileRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class StoreMedicalFileRequest extends FormRequest
     {
         return [
             'file' => ['required', 'file', 'mimes:jpg,png,pdf,docx', 'max:10240'],
-            'file_name' => ['required', 'string', 'max:255'],
+            'file_name' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }

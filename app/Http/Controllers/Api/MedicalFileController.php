@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMedicalFileRequest;
+use App\Http\Requests\UpdateMedicalFileRequest;
 use App\Http\Resources\MedicalFileResource;
 use App\Models\MedicalFile;
 use App\Models\MedicalRecord;
@@ -35,7 +36,16 @@ class MedicalFileController extends Controller
     public function destroy(MedicalFile $medicalFile)
     {
         $this->authorize('delete', $medicalFile);
-        $this->service->delete($medicalFile);
+        $this->service->deleteFile($medicalFile);  // <-- изменено
         return response()->json(['message' => 'Файл удалён']);
+    }
+
+    public function update(UpdateMedicalFileRequest $request, MedicalFile $medicalFile)
+    {
+        $this->authorize('update', $medicalFile);
+
+        $updatedFile = $this->service->updateFile($medicalFile, $request->file('file'), $request->input('file_name'));
+
+        return new MedicalFileResource($updatedFile);
     }
 }

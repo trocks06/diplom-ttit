@@ -35,62 +35,72 @@ class UserService extends BaseService
     public function updateProfile(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
+            // Общие поля пользователя
             $user->update(array_intersect_key($data, array_flip([
                 'firstname', 'lastname', 'patronymic', 'phone', 'email'
             ])));
-            if ($user->role->role_name === 'Пациент' && $user->patient) {
+
+            if ($user->role?->role_name === 'Пациент' && $user->patient) {
                 $user->patient->update(array_intersect_key($data, array_flip([
                     'address', 'gender', 'allergies', 'chronic_diseases', 'birth_date'
                 ])));
+            }
+
+            if ($user->role?->role_name === 'Врач' && $user->doctor) {
+                $user->doctor->update(array_intersect_key($data, array_flip(['license'])));
+
+                if (isset($data['specialization_ids'])) {
+                    $user->doctor->specializations()->sync($data['specialization_ids']);
+                }
             }
 
             return $user->load(['patient', 'doctor']);
         });
     }
 
-    /**
-     * Удаление текущего пользователя с проверками по ролям.
-     * @throws ValidationException
-     */
     public function deleteSelf(User $user): void
     {
-        $role = $user->role?->role_name;
+        DB::transaction(function () use ($user) {
+            $role = $user->role?->role_name;
 
-        if ($role === 'Пациент') {
-            $hasActive = $user->patient?->appointments()
-                ->whereHas('status', fn($q) => $q->where('status_name', 'Запланирован'))
-                ->exists();
-            if ($hasActive) {
-                throw ValidationException::withMessages([
-                    'user' => ['У вас есть активные записи. Сначала отмените их.'],
-                ]);
+            if ($role === 'Пациент') {
+                $hasActive = $user->patient?->appointments()
+                    ->whereHas('status', fn($q) => $q->where('status_name', 'Запланирован'))
+                    ->exists();
+                if ($hasActive) {
+                    throw ValidationException::withMessages([
+                        'user' => ['У вас есть активные записи. Сначала отмените их.'],
+                    ]);
+                }
             }
-        }
 
-        if ($role === 'Врач') {
-            $hasUpcoming = $user->doctor?->schedules()
-                ->where('start_time', '>', now())
-                ->whereHas('appointments', fn($q) =>
-                $q->whereHas('status', fn($s) => $s->where('status_name', 'Запланирован'))
-                )
-                ->exists();
-            if ($hasUpcoming) {
-                throw ValidationException::withMessages([
-                    'user' => ['У вас есть предстоящие приёмы. Невозможно удалить профиль.'],
-                ]);
+            if ($role === 'Врач') {
+                $hasUpcoming = $user->doctor?->schedules()
+                    ->where('start_time', '>', now())
+                    ->whereHas('appointments', fn($q) =>
+                    $q->whereHas('status', fn($s) => $s->where('status_name', 'Запланирован'))
+                    )
+                    ->exists();
+                if ($hasUpcoming) {
+                    throw ValidationException::withMessages([
+                        'user' => ['У вас есть предстоящие приёмы. Невозможно удалить профиль.'],
+                    ]);
+                }
             }
-        }
 
-        if ($role === 'Администратор') {
-            $adminCount = User::whereHas('role', fn($q) => $q->where('role_name', 'Администратор'))->count();
-            if ($adminCount <= 1) {
-                throw ValidationException::withMessages([
-                    'user' => ['Нельзя удалить последнего администратора.'],
-                ]);
+            if ($role === 'Администратор') {
+                $adminCount = User::whereHas('role', fn($q) => $q->where('role_name', 'Администратор'))
+                    ->lockForUpdate()
+                    ->count();
+                if ($adminCount <= 1) {
+                    throw ValidationException::withMessages([
+                        'user' => ['Нельзя удалить последнего администратора.'],
+                    ]);
+                }
             }
-        }
 
-        $this->delete($user->id);
+            $this->delete($user->id);
+        });
     }
 
     public function delete(int $id): bool

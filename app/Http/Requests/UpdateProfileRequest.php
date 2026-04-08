@@ -24,6 +24,7 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         $userId = auth()->id();
+
         return [
             'firstname' => ['sometimes', 'string', 'max:100'],
             'lastname'  => ['sometimes', 'string', 'max:100'],
@@ -35,6 +36,9 @@ class UpdateProfileRequest extends FormRequest
             'allergies' => ['nullable', 'string', 'max:500'],
             'chronic_diseases' => ['nullable', 'string', 'max:500'],
             'birth_date'=> ['sometimes', 'date', 'date_format:d.m.Y', 'before:today'],
+            'license'   => ['sometimes', 'string', 'max:100', 'unique:doctors,license,' . ($userId ? optional(auth()->user()->doctor)->id : '')],
+            'specialization_ids'   => ['sometimes', 'array'],
+            'specialization_ids.*' => ['integer', 'exists:specializations,id'],
         ];
     }
 }

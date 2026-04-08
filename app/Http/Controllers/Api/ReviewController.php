@@ -36,7 +36,10 @@ class ReviewController extends Controller
 
     public function show(Review $review)
     {
-        return new ReviewResource($review->load(['appointment.user', 'appointment.doctor']));
+        return new ReviewResource($review->load([
+            'appointment.patient.user',
+            'appointment.schedule.doctor.user'
+        ]));
     }
 
     public function update(UpdateReviewRequest $request, Review $review)

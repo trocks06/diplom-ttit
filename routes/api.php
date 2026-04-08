@@ -64,14 +64,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('medical-records', MedicalRecordController::class)->only(['show', 'update', 'destroy']);
     Route::post('appointments/{appointment}/medical-record', [MedicalRecordController::class, 'store']);
     Route::post('medical-records/{medical_record}/files', [MedicalFileController::class, 'store']);
+    Route::patch('medical-files/{medical_file}', [MedicalFileController::class, 'update']);
     Route::delete('medical-files/{medical_file}', [MedicalFileController::class, 'destroy']);
 
     // Отзывы (изменение/удаление только автором или админом)
     Route::apiResource('reviews', ReviewController::class)->only(['update', 'destroy']);
 
-    // Пользователи (просмотр всем авторизованным, удаление только админу)
-    Route::apiResource('users', UserController::class)->only(['index', 'show']);
+    Route::apiResource('users', UserController::class)->only(['index', 'show'])
+        ->middleware('role:Администратор');
+    Route::get('users/{user}', [UserController::class, 'show']);
     Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('role:Администратор');
+
 
     // Пациенты (управление только админ)
     Route::apiResource('patients', PatientController::class)->only(['store', 'update', 'destroy'])
@@ -90,7 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Просмотр слотов доступен всем авторизованным
     Route::get('schedules', [ScheduleController::class, 'index']);
     Route::get('schedules/{schedule}', [ScheduleController::class, 'show']);
-
+    Route::get('doctor/schedules', [ScheduleController::class, 'mySchedules']);
     // Роли (только просмотр)
     Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
 
@@ -103,6 +106,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('statuses', StatusController::class)
         ->only(['store', 'update', 'destroy'])
         ->middleware('role:Администратор');
+
+    Route::apiResource('notifications', NotificationController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->middleware('role:Администратор');
+
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('notifications/{notification}', [NotificationController::class, 'show']);
 
     // Отчёты (только админ)
     Route::middleware('role:Администратор')->prefix('reports')->group(function () {

@@ -80,4 +80,12 @@ class ScheduleService extends BaseService
             ]);
         }
     }
+
+    public function getForDoctor(int $doctorId, array $with = [])
+    {
+        return $this->model->where('doctor_id', $doctorId)
+            ->with($with)
+            ->orderBy('start_time')
+            ->get();
+    }
 }

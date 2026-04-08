@@ -21,6 +21,11 @@ class MedicalFilePolicy
         return $user->id === $medicalRecord->appointment?->schedule?->doctor?->user_id;
     }
 
+    public function update(User $user, MedicalFile $medicalFile): bool
+    {
+        return $user->id === $medicalFile->medical_record?->appointment?->schedule?->doctor?->user_id;
+    }
+
     public function delete(User $user, MedicalFile $medicalFile): bool
     {
         return $user->id === $medicalFile->medical_record?->appointment?->schedule?->doctor?->user_id;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMedicalRecordRequest;
+use App\Http\Requests\UpdateMedicalRecordRequest;
 use App\Http\Resources\MedicalRecordResource;
 use App\Models\Appointment;
 use App\Models\MedicalRecord;
@@ -40,10 +41,12 @@ class MedicalRecordController extends Controller
         return new MedicalRecordResource($medicalRecord->load(['appointment.schedule.doctor', 'medical_files']));
     }
 
-    public function update(Request $request, MedicalRecord $medicalRecord)
+    public function update(UpdateMedicalRecordRequest $request, MedicalRecord $medicalRecord)
     {
         $this->authorize('update', $medicalRecord);
-        $medicalRecord->update($request->only(['diagnosis', 'treatment', 'notes']));
+
+        $medicalRecord->update($request->validated());
+
         return new MedicalRecordResource($medicalRecord);
     }
 
