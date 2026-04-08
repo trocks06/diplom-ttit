@@ -20,7 +20,7 @@ class MedicalFileService extends BaseService
         $originalName = $file->getClientOriginalName();
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
-        $path = $file->storeAs('medical_files/' . $medicalRecord->id, $filename, 'public');
+        $path = $file->storeAs('medical_files/' . $medicalRecord->id, $filename, 'local');
 
         return $medicalRecord->medical_files()->create([
             'file_name' => $originalName,
@@ -39,7 +39,7 @@ class MedicalFileService extends BaseService
         $originalName = $customName ?: $newFile->getClientOriginalName();
         $extension = $newFile->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
-        $path = $newFile->storeAs('medical_files/' . $medicalFile->medical_record_id, $filename, 'public');
+        $path = $newFile->storeAs('medical_files/' . $medicalFile->medical_record_id, $filename, 'local');
 
         $medicalFile->update([
             'file_name' => $originalName,
@@ -50,13 +50,10 @@ class MedicalFileService extends BaseService
         return $medicalFile;
     }
 
-    /**
-     * Удаление файла (по модели)
-     */
     public function deleteFile(MedicalFile $file): void
     {
-        if (Storage::disk('public')->exists($file->file_path)) {
-            Storage::disk('public')->delete($file->file_path);
+        if (Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
         }
         $file->delete();
     }

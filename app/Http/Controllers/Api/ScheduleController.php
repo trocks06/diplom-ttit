@@ -26,7 +26,6 @@ class ScheduleController extends Controller
     {
         $user = auth()->user();
         $roleName = $user->role?->role_name;
-
         if ($roleName === 'Администратор') {
             $schedules = $this->service->getAll(['doctor.user', 'appointments.status']);
         } elseif ($roleName === 'Врач' && $user->doctor) {
@@ -34,7 +33,6 @@ class ScheduleController extends Controller
         } else {
             $schedules = $this->service->getAvailable();
         }
-
         return ScheduleResource::collection($schedules);
     }
 

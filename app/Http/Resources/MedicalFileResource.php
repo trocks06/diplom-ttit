@@ -11,7 +11,7 @@ class MedicalFileResource extends JsonResource
         return [
             'id' => $this->id,
             'file_name' => $this->file_name,
-            'file_path' => $this->file_path,
+            'url' => route('medical-files.download', $this->id),
             'file_type' => $this->file_type,
             'created_at' => $this->created_at?->format('d.m.Y H:i:s'),
         ];

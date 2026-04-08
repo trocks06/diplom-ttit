@@ -16,6 +16,13 @@ class MedicalFilePolicy
         return null;
     }
 
+    public function view(User $user, MedicalFile $medicalFile): bool
+    {
+        $appointment = $medicalFile->medical_record?->appointment;
+        return $user->id === $appointment?->patient?->user_id ||
+            $user->id === $appointment?->schedule?->doctor?->user_id;
+    }
+
     public function create(User $user, MedicalRecord $medicalRecord): bool
     {
         return $user->id === $medicalRecord->appointment?->schedule?->doctor?->user_id;
