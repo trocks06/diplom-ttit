@@ -21,18 +21,12 @@ class NotificationController extends Controller
         $this->service = $service;
     }
 
-    /**
-     * Список уведомлений, пришедших МНЕ
-     */
     public function index()
     {
         $notifications = $this->service->getForUser(auth()->id());
         return NotificationResource::collection($notifications);
     }
 
-    /**
-     * Создание уведомления для пользователя
-     */
     public function store(StoreNotificationRequest $request)
     {
         $this->authorize('create', Notification::class);
@@ -40,9 +34,6 @@ class NotificationController extends Controller
         return new NotificationResource($notification);
     }
 
-    /**
-     * Просмотр конкретного (моего) уведомления
-     */
     public function show(Notification $notification)
     {
         $this->authorize('view', $notification);
@@ -53,9 +44,6 @@ class NotificationController extends Controller
         return new NotificationResource($notification);
     }
 
-    /**
-     * Удаление (мною моего) уведомления
-     */
     public function destroy(Notification $notification)
     {
         $this->authorize('delete', $notification);

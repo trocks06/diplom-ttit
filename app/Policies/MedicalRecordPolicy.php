@@ -34,7 +34,6 @@ class MedicalRecordPolicy
 
     public function delete(User $user, MedicalRecord $medicalRecord): bool
     {
-        return $user->role?->role_name === 'Администратор' ||
-            $user->id === $medicalRecord->appointment?->schedule?->doctor?->user_id;
+        return $user->id === $medicalRecord->appointment?->schedule?->doctor?->user_id;
     }
 }

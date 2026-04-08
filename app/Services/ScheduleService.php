@@ -88,4 +88,15 @@ class ScheduleService extends BaseService
             ->orderBy('start_time')
             ->get();
     }
+
+    public function getAvailable()
+    {
+        return $this->model->where('start_time', '>', now())
+            ->whereDoesntHave('appointments', function ($q) {
+                $q->whereHas('status', fn($s) => $s->whereNotIn('status_name', ['Отменен', 'Отменён']));
+            })
+            ->with(['doctor.user'])
+            ->orderBy('start_time')
+            ->get();
+    }
 }

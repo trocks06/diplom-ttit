@@ -23,14 +23,10 @@ class MedicalRecordService extends BaseService
             ->get();
     }
 
-    public function getForCurrentUser(User $user): Collection
+    public function getForDoctor(int $doctorId): Collection
     {
-        if ($user->role->role_name !== 'Пациент') {
-            throw ValidationException::withMessages([
-                'user' => ['Доступ только для пациентов.'],
-            ]);
-        }
-
-        return $this->getForPatient($user->patient->id);
+        return $this->model->whereHas('appointment.schedule', function($q) use ($doctorId) {
+            $q->where('doctor_id', $doctorId);
+        })->with(['appointment.patient.user', 'medical_files'])->latest()->get();
     }
 }

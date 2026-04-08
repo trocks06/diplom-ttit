@@ -24,11 +24,19 @@ class AppointmentController extends Controller
 
     public function index()
     {
-        $appointments = $this->service->getAll([
-            'schedule.doctor.user',
-            'status',
-            'patient.user'
-        ]);
+        $user = auth()->user();
+        $roleName = $user->role->role_name;
+
+        $appointments = match ($roleName) {
+            'Администратор' => $this->service->getAll([
+                'schedule.doctor.user',
+                'status',
+                'patient.user'
+            ]),
+            'Врач' => $this->service->getForDoctor($user->doctor->id),
+            'Пациент' => $this->service->getForPatient($user->patient->id)
+        };
+
         return AppointmentResource::collection($appointments);
     }
 
@@ -43,30 +51,16 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
+        $this->authorize('view', $appointment);
         return new AppointmentResource($appointment->load(['schedule', 'patient.user', 'status', 'medical_record']));
     }
 
     public function updateStatus(UpdateAppointmentStatusRequest $request, Appointment $appointment)
     {
+        $this->authorize('updateStatus', $appointment);
         $updated = $this->service->update($appointment->id, [
             'status_id' => $request->status_id
         ]);
         return new AppointmentResource($updated->load(['status', 'schedule.doctor.user']));
-    }
-
-    public function myAppointments()
-    {
-        $user = auth()->user();
-        $roleName = $user->role->role_name;
-
-        if ($roleName === 'Пациент') {
-            $appointments = $this->service->getForPatient($user->patient->id);
-        } elseif ($roleName === 'Врач') {
-            $appointments = $this->service->getForDoctor($user->doctor->id);
-        } else {
-            $appointments = $this->service->getAll();
-        }
-
-        return AppointmentResource::collection($appointments);
     }
 }

@@ -23,7 +23,6 @@ class MedicalFileController extends Controller
         $this->service = $service;
     }
 
-    // Загрузка файла к записи медкарты
     public function store(StoreMedicalFileRequest $request, MedicalRecord $medicalRecord)
     {
         $this->authorize('create', [MedicalFile::class, $medicalRecord]);
@@ -32,11 +31,10 @@ class MedicalFileController extends Controller
         return new MedicalFileResource($file);
     }
 
-    // Удаление файла
     public function destroy(MedicalFile $medicalFile)
     {
         $this->authorize('delete', $medicalFile);
-        $this->service->deleteFile($medicalFile);  // <-- изменено
+        $this->service->deleteFile($medicalFile);
         return response()->json(['message' => 'Файл удалён']);
     }
 

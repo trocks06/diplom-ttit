@@ -24,7 +24,17 @@ class ScheduleController extends Controller
 
     public function index()
     {
-        $schedules = $this->service->getAll(['doctor.user', 'appointments.status']);
+        $user = auth()->user();
+        $roleName = $user->role?->role_name;
+
+        if ($roleName === 'Администратор') {
+            $schedules = $this->service->getAll(['doctor.user', 'appointments.status']);
+        } elseif ($roleName === 'Врач' && $user->doctor) {
+            $schedules = $this->service->getForDoctor($user->doctor->id, ['appointments.status']);
+        } else {
+            $schedules = $this->service->getAvailable();
+        }
+
         return ScheduleResource::collection($schedules);
     }
 
@@ -53,18 +63,5 @@ class ScheduleController extends Controller
         } catch (ValidationException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
-    }
-
-    public function mySchedules()
-    {
-        $doctor = auth()->user()->doctor;
-
-        if (!$doctor) {
-            return response()->json(['message' => 'Профиль врача не найден'], 404);
-        }
-
-        $schedules = $this->service->getForDoctor($doctor->id, ['appointments.status']);
-
-        return ScheduleResource::collection($schedules);
     }
 }
