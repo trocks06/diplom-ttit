@@ -6,6 +6,8 @@ use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ScheduleService extends BaseService
 {
@@ -17,20 +19,16 @@ class ScheduleService extends BaseService
     public function create(array $data): Model
     {
         $this->checkOverlapping($data['doctor_id'], $data['start_time'], $data['end_time']);
-
         return parent::create($data);
     }
 
     public function update($id, array $data): Model
     {
         $slot = $this->find($id);
-
-        // Проверяем, есть ли активные записи на этот слот
         $hasActiveAppointments = $slot->appointments()
             ->whereHas('status', function ($q) {
                 $q->whereNotIn('status_name', ['Отменен', 'Отменён']);
             })->exists();
-
         if ($hasActiveAppointments && (isset($data['start_time']) || isset($data['end_time']))) {
             throw ValidationException::withMessages([
                 'start_time' => 'Нельзя менять время у слота, на который уже записан пациент.',
@@ -81,22 +79,30 @@ class ScheduleService extends BaseService
         }
     }
 
-    public function getForDoctor(int $doctorId, array $with = [])
+    public function getFilteredBuilder()
     {
-        return $this->model->where('doctor_id', $doctorId)
-            ->with($with)
-            ->orderBy('start_time')
-            ->get();
-    }
-
-    public function getAvailable()
-    {
-        return $this->model->where('start_time', '>', now())
-            ->whereDoesntHave('appointments', function ($q) {
-                $q->whereHas('status', fn($s) => $s->whereNotIn('status_name', ['Отменен', 'Отменён']));
-            })
-            ->with(['doctor.user'])
-            ->orderBy('start_time')
-            ->get();
+        return QueryBuilder::for(Schedule::class)
+            ->allowedIncludes(['doctor.user', 'appointments'])
+            ->allowedFilters([
+                AllowedFilter::exact('doctor_id'),
+                AllowedFilter::callback('starts_after', function ($query, $value) {
+                    $query->where('start_time', '>=', Carbon::parse($value));
+                }),
+                AllowedFilter::callback('ends_before', function ($query, $value) {
+                    $query->where('end_time', '<=', Carbon::parse($value));
+                }),
+                AllowedFilter::callback('date', function ($query, $value) {
+                    $query->whereDate('start_time', Carbon::parse($value));
+                }),
+                AllowedFilter::callback('is_free', function ($query, $value) {
+                    if ($value === 'true' || $value === '1') {
+                        $query->whereDoesntHave('appointments', function ($q) {
+                            $q->where('status_id', '!=', 3);
+                        });
+                    }
+                }),
+            ])
+            ->allowedSorts(['start_time', 'end_time'])
+            ->defaultSort('start_time');
     }
 }

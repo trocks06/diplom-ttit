@@ -52,7 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('reviews', ReviewController::class)->only(['update', 'destroy']);
     Route::apiResource('notifications', NotificationController::class)->only(['index', 'show']);
     Route::apiResource('patients', PatientController::class)->only(['index', 'show']);
-    Route::apiResource('doctors', DoctorController::class)->only(['index', 'show']);
     Route::get('medical-files/{medical_file}/download', [MedicalFileController::class, 'download'])
         ->name('medical-files.download');
 });

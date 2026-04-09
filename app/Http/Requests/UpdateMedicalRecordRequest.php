@@ -14,7 +14,7 @@ class UpdateMedicalRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'diagnosis' => ['nullable', 'string', 'max:1000'],
+            'diagnosis' => ['sometimes', 'string', 'max:1000'],
             'treatment' => ['nullable', 'string', 'max:2000'],
             'notes'     => ['nullable', 'string', 'max:1000'],
         ];

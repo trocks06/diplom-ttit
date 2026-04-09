@@ -7,6 +7,8 @@ use App\Models\Role;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class PatientService extends BaseService
 {
@@ -50,5 +52,48 @@ class PatientService extends BaseService
             ]));
             return $patient->load('user');
         });
+    }
+
+    public function getFilteredBuilder()
+    {
+        return QueryBuilder::for(Patient::class)
+            ->allowedIncludes(['user'])
+            ->allowedFilters([
+                AllowedFilter::callback('search', function ($query, $value) {
+                    $searchTerm = '%' . $value . '%';
+                    $query->whereHas('user', function ($q) use ($searchTerm) {
+                        $q->where('lastname', 'like', $searchTerm)
+                            ->orWhere('firstname', 'like', $searchTerm)
+                            ->orWhere('patronymic', 'like', $searchTerm)
+                            ->orWhere('phone', 'like', $searchTerm)
+                            ->orWhere('email', 'like', $searchTerm);
+                    });
+                }),
+                AllowedFilter::exact('gender'),
+                AllowedFilter::callback('has_allergies', function ($query, $value) {
+                    if ($value === 'true' || $value === '1') {
+                        $query->whereNotNull('allergies')->where('allergies', '!=', '');
+                    } elseif ($value === 'false' || $value === '0') {
+                        $query->where(function($q) {
+                            $q->whereNull('allergies')->orWhere('allergies', '');
+                        });
+                    }
+                }),
+                AllowedFilter::callback('has_chronic_diseases', function ($query, $value) {
+                    if ($value === 'true' || $value === '1') {
+                        $query->whereNotNull('chronic_diseases')->where('chronic_diseases', '!=', '');
+                    } elseif ($value === 'false' || $value === '0') {
+                        $query->where(function($q) {
+                            $q->whereNull('chronic_diseases')->orWhere('chronic_diseases', '');
+                        });
+                    }
+                }),
+            ])
+            ->allowedSorts([
+                'id',
+                'created_at',
+                'birth_date'
+            ])
+            ->defaultSort('-created_at');
     }
 }

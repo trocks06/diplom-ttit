@@ -24,11 +24,9 @@ class ReviewController extends Controller
 
     public function index()
     {
-        $reviews = $this->service->getAll([
-            'appointment.patient.user',
-            'appointment.schedule.doctor.user'
-        ]);
-        return ReviewResource::collection($reviews);
+        $query = $this->service->getFilteredBuilder();
+        $query->with(['appointment.schedule.doctor.user', 'appointment.patient.user']);
+        return ReviewResource::collection($query->paginate(15));
     }
 
     public function show(Review $review)

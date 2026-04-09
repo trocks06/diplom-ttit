@@ -30,9 +30,8 @@ class MedicalFileService extends BaseService
 
     public function updateFile(MedicalFile $medicalFile, UploadedFile $newFile, ?string $customName = null): MedicalFile
     {
-        // Удаляем старый файл
-        if (Storage::disk('public')->exists($medicalFile->file_path)) {
-            Storage::disk('public')->delete($medicalFile->file_path);
+        if (Storage::disk('local')->exists($medicalFile->file_path)) {
+            Storage::disk('local')->delete($medicalFile->file_path);
         }
         $originalName = $customName ?: $newFile->getClientOriginalName();
         $extension = $newFile->getClientOriginalExtension();

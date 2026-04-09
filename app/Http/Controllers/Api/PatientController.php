@@ -20,8 +20,9 @@ class PatientController extends Controller
 
     public function index()
     {
-        $patients = $this->service->getAll(['user']);
-        return PatientResource::collection($patients);
+        $query = $this->service->getFilteredBuilder();
+        $query->with(['user']);
+        return PatientResource::collection($query->paginate(20));
     }
 
     public function store(StorePatientRequest $request)

@@ -9,6 +9,7 @@ use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use App\Services\ScheduleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ScheduleController extends Controller
@@ -24,16 +25,13 @@ class ScheduleController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
-        $roleName = $user->role?->role_name;
-        if ($roleName === 'Администратор') {
-            $schedules = $this->service->getAll(['doctor.user', 'appointments.status']);
-        } elseif ($roleName === 'Врач' && $user->doctor) {
-            $schedules = $this->service->getForDoctor($user->doctor->id, ['appointments.status']);
-        } else {
-            $schedules = $this->service->getAvailable();
+        $query = $this->service->getFilteredBuilder();
+        $query->with(['doctor.user']);
+        if (!auth()->user() || auth()->user()->role->role_name === 'Пациент') {
+            $query->where('start_time', '>=', now());
         }
-        return ScheduleResource::collection($schedules);
+
+        return ScheduleResource::collection($query->get());
     }
 
     public function show(Schedule $schedule)
