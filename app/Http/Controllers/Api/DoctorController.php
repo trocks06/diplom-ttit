@@ -20,8 +20,9 @@ class DoctorController extends Controller
 
     public function index()
     {
-        $doctors = $this->service->getAll(['user']);
-        return DoctorResource::collection($doctors);
+        $query = $this->service->getFilteredBuilder();
+        $query->with(['user', 'specializations']);
+        return DoctorResource::collection($query->get());
     }
 
     public function store(StoreDoctorRequest $request)
