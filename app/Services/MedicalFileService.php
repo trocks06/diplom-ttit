@@ -21,7 +21,6 @@ class MedicalFileService extends BaseService
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
         $path = $file->storeAs('medical_files/' . $medicalRecord->id, $filename, 'local');
-
         return $medicalRecord->medical_files()->create([
             'file_name' => $originalName,
             'file_path' => $path,
@@ -35,18 +34,15 @@ class MedicalFileService extends BaseService
         if (Storage::disk('public')->exists($medicalFile->file_path)) {
             Storage::disk('public')->delete($medicalFile->file_path);
         }
-
         $originalName = $customName ?: $newFile->getClientOriginalName();
         $extension = $newFile->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
         $path = $newFile->storeAs('medical_files/' . $medicalFile->medical_record_id, $filename, 'local');
-
         $medicalFile->update([
             'file_name' => $originalName,
             'file_path' => $path,
             'file_type' => $extension,
         ]);
-
         return $medicalFile;
     }
 

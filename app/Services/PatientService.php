@@ -31,7 +31,7 @@ class PatientService extends BaseService
                 'allergies'        => $data['allergies'] ?? null,
                 'chronic_diseases' => $data['chronic_diseases'] ?? null,
             ]);
-            $patient->load(['user.role']); // ← подгружаем user.role
+            $patient->load(['user.role']);
             return $patient;
         });
     }
@@ -40,11 +40,7 @@ class PatientService extends BaseService
     {
         return DB::transaction(function () use ($id, $data) {
             $patient = $this->find($id);
-
-            // Обновляем юзера через UserService
             $this->userService->update($patient->user_id, $data);
-
-            // Обновляем специфику пациента
             $patient->update(array_filter([
                 'address'    => $data['address'] ?? null,
                 'gender'     => $data['gender'] ?? null,
@@ -52,7 +48,6 @@ class PatientService extends BaseService
                 'allergies'        => $data['allergies'] ?? null,
                 'chronic_diseases' => $data['chronic_diseases'] ?? null,
             ]));
-
             return $patient->load('user');
         });
     }

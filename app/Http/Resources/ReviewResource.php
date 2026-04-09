@@ -12,7 +12,6 @@ class ReviewResource extends JsonResource
         return [
             'id' => $this->id,
             'rating' => $this->rating,
-            // Комментарий показываем только в детальном просмотре (show), но не в списке
             'comment' => $this->when(!$request->routeIs('reviews.index'), $this->comment),
             'patient_name' => $this->appointment?->patient?->user
                 ? $this->appointment->patient->user->firstname . ' ' . $this->appointment->patient->user->lastname

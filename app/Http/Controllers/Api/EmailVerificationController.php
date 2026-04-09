@@ -13,9 +13,7 @@ class EmailVerificationController extends Controller
         if ($request->user()->hasVerifiedEmail()) {
             return response()->json(['message' => 'Email уже подтверждён.'], 400);
         }
-
         $request->user()->sendEmailVerificationNotification();
-
         return response()->json(['message' => 'Письмо для подтверждения отправлено.']);
     }
 

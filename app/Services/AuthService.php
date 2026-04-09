@@ -16,7 +16,6 @@ class AuthService
 
     public function __construct(PatientService $patientService)
     {
-        // Теперь AuthService знает про PatientService
         $this->patientService = $patientService;
     }
 
@@ -33,13 +32,10 @@ class AuthService
                 'email' => ['Неправильные почта или пароль.'],
             ]);
         }
-
         $user = Auth::user();
         $user->tokens()->delete();
         $token = $user->createToken("auth_token")->plainTextToken;
-
         $user->load('role');
-
         return ['user' => $user, 'token' => $token];
     }
 
@@ -55,7 +51,6 @@ class AuthService
                 'current_password' => ['Текущий пароль указан неверно.'],
             ]);
         }
-
         $user->password = Hash::make($newPassword);
         $user->save();
         $user->tokens()->delete();

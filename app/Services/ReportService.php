@@ -17,7 +17,6 @@ class ReportService
      */
     public function patientsReport(): array
     {
-        // Перекладываем вычисления на сторону СУБД
         $patients = Patient::with(['user'])
             ->withCount('appointments as total_appointments')
             ->withCount(['appointments as canceled_appointments' => function ($query) {
@@ -40,9 +39,6 @@ class ReportService
         return $patients->toArray();
     }
 
-    /**
-     * Отчёт по врачам: количество приёмов, средний рейтинг, загруженность.
-     */
     public function doctorsReport(): array
     {
         $doctors = Doctor::with([

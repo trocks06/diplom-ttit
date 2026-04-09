@@ -7,9 +7,9 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentStatusRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
-use App\Models\Status;
 use App\Services\AppointmentService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
@@ -26,18 +26,13 @@ class AppointmentController extends Controller
     {
         $user = auth()->user();
         $roleName = $user->role->role_name;
-
-        $appointments = match ($roleName) {
-            'Администратор' => $this->service->getAll([
-                'schedule.doctor.user',
-                'status',
-                'patient.user'
-            ]),
-            'Врач' => $this->service->getForDoctor($user->doctor->id),
-            'Пациент' => $this->service->getForPatient($user->patient->id)
-        };
-
-        return AppointmentResource::collection($appointments);
+        $query = $this->service->getFilteredBuilder();
+        if ($roleName === 'Врач') {
+            $query->whereHas('schedule', fn($q) => $q->where('doctor_id', $user->doctor->id));
+        } elseif ($roleName === 'Пациент') {
+            $query->where('patient_id', $user->patient->id);
+        }
+        return AppointmentResource::collection($query->get());
     }
 
     public function store(StoreAppointmentRequest $request)

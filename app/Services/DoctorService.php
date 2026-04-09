@@ -29,11 +29,9 @@ class DoctorService extends BaseService
             $doctor = $user->doctor()->create([
                 'license' => $data['license'],
             ]);
-
             if (!empty($data['specialization_ids'])) {
                 $doctor->specializations()->sync($data['specialization_ids']);
             }
-
             $doctor->load(['user.role', 'specializations']); // ← подгружаем role
             return $doctor;
         });
@@ -43,17 +41,13 @@ class DoctorService extends BaseService
     {
         return DB::transaction(function () use ($id, $data) {
             $doctor = $this->find($id);
-
             $this->userService->update($doctor->user_id, $data);
-
             $doctor->update(array_filter([
                 'license' => $data['license'] ?? null,
             ]));
-
             if (isset($data['specialization_ids'])) {
                 $doctor->specializations()->sync($data['specialization_ids']);
             }
-
             return $doctor->load(['user', 'specializations']);
         });
     }
