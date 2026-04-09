@@ -8,30 +8,30 @@ use Illuminate\Http\JsonResponse;
 
 class ReportController extends Controller
 {
-    protected ReportService $reportService;
+    protected ReportService $service;
 
-    public function __construct(ReportService $reportService)
+    public function __construct(ReportService $service)
     {
-        $this->reportService = $reportService;
+        $this->service = $service;
     }
 
     public function patients(): JsonResponse
     {
-        return response()->json($this->reportService->patientsReport());
+        return response()->json($this->service->patientsReport());
     }
 
     public function doctors(): JsonResponse
     {
-        return response()->json($this->reportService->doctorsReport());
+        return response()->json($this->service->doctorsReport());
     }
 
     public function canceled(): JsonResponse
     {
-        return response()->json($this->reportService->canceledAppointmentsReport());
+        return response()->json($this->service->canceledAppointmentsReport());
     }
 
     public function satisfaction(): JsonResponse
     {
-        return response()->json($this->reportService->satisfactionReport());
+        return response()->json($this->service->satisfactionReport());
     }
 }

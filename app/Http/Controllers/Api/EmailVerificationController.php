@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class EmailVerificationController extends Controller
 {
-    // Повторная отправка письма
     public function sendVerificationEmail(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
@@ -20,7 +19,6 @@ class EmailVerificationController extends Controller
         return response()->json(['message' => 'Письмо для подтверждения отправлено.']);
     }
 
-    // Подтверждение по ссылке
     public function verify(EmailVerificationRequest $request)
     {
         $request->fulfill();

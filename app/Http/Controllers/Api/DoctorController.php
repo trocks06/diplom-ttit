@@ -11,22 +11,22 @@ use App\Services\DoctorService;
 
 class DoctorController extends Controller
 {
-    protected DoctorService $doctorService;
+    protected DoctorService $service;
 
-    public function __construct(DoctorService $doctorService)
+    public function __construct(DoctorService $service)
     {
-        $this->doctorService = $doctorService;
+        $this->service = $service;
     }
 
     public function index()
     {
-        $doctors = $this->doctorService->getAll(['user']);
+        $doctors = $this->service->getAll(['user']);
         return DoctorResource::collection($doctors);
     }
 
     public function store(StoreDoctorRequest $request)
     {
-        $doctor = $this->doctorService->create($request->validated());
+        $doctor = $this->service->create($request->validated());
         return new DoctorResource($doctor);
     }
 
@@ -37,13 +37,13 @@ class DoctorController extends Controller
 
     public function update(UpdateDoctorRequest $request, Doctor $doctor)
     {
-        $updated = $this->doctorService->update($doctor->id, $request->validated());
+        $updated = $this->service->update($doctor->id, $request->validated());
         return new DoctorResource($updated);
     }
 
     public function destroy(Doctor $doctor)
     {
-        $this->doctorService->delete($doctor->id);
+        $this->service->delete($doctor->id);
         return response()->json(['message' => 'Доктор успешно удалён.']);
     }
 }

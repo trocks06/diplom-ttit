@@ -16,27 +16,25 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    protected AuthService $authService;
+    protected AuthService $service;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $service)
     {
-        $this->authService = $authService;
+        $this->service = $service;
     }
     public function register(RegisterUserRequest $request)
     {
-        $user = $this->authService->register($request->validated());
+        $user = $this->service->register($request->validated());
         $token = $user->createToken("auth_token")->plainTextToken;
         $user->load(['patient', 'role']);
-
         $user->sendEmailVerificationNotification();
-
         return (new UserResource($user))->additional(['token' => $token]);
     }
 
     public function login(LoginUserRequest $request)
     {
         try {
-            $result = $this->authService->login($request->validated());
+            $result = $this->service->login($request->validated());
             $result['user']->load('role', 'patient', 'doctor');
             return (new UserResource($result['user']))->additional(['token' => $result['token']]);
         } catch (ValidationException $e) {
@@ -46,14 +44,14 @@ class AuthController extends Controller
 
     public function logout()
     {
-        $this->authService->logout(auth()->user());
+        $this->service->logout(auth()->user());
         return response()->json(['message' => 'Вы вышли из системы.']);
     }
 
     public function changePassword(ChangePasswordRequest $request)
     {
         try {
-            $this->authService->changePassword(
+            $this->service->changePassword(
                 $request->user(),
                 $request->current_password,
                 $request->new_password

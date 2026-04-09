@@ -9,16 +9,16 @@ use App\Services\StatusService;
 
 class StatusController extends Controller
 {
-    protected StatusService $statusService;
+    protected StatusService $service;
 
-    public function __construct(StatusService $statusService)
+    public function __construct(StatusService $service)
     {
-        $this->statusService = $statusService;
+        $this->service = $service;
     }
 
     public function index()
     {
-        $statuses = $this->statusService->getAll();
+        $statuses = $this->service->getAll();
         return StatusResource::collection($statuses);
     }
 

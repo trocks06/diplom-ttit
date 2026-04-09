@@ -14,15 +14,12 @@ class StoreDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // --- Данные для таблицы users ---
             'firstname' => ['required', 'string', 'max:100'],
             'lastname' => ['required', 'string', 'max:100'],
             'patronymic' => ['nullable', 'string', 'max:100'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'email' => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-
-
             'license' => ['required', 'string', 'max:100', 'unique:doctors,license'],
             'specialization_ids' => ['required', 'array', 'min:1'],
             'specialization_ids.*' => ['integer', 'exists:specializations,id'],

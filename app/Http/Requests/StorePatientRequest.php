@@ -8,7 +8,7 @@ class StorePatientRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Не забудь прописать логику авторизации, если нужно
+        return true;
     }
 
     public function rules(): array
@@ -20,7 +20,6 @@ class StorePatientRequest extends FormRequest
             'phone'      => ['required', 'string', 'max:20', 'unique:users,phone'],
             'email'      => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             'password'   => ['required', 'string', 'min:8'],
-
             'address'          => ['required', 'string', 'max:255'],
             'gender'           => ['required', 'string', 'in:Мужской,Женский'],
             'allergies'        => ['nullable', 'string', 'max:500'],

@@ -10,12 +10,9 @@ class UpdateDoctorRequest extends FormRequest
     {
         return true;
     }
-
     public function rules(): array
     {
         $doctor = $this->route('doctor');
-
-        // Получаем оба ID для исключений
         $userId = $doctor ? $doctor->user_id : null;
         $doctorId = $doctor ? $doctor->id : null;
 
@@ -26,7 +23,6 @@ class UpdateDoctorRequest extends FormRequest
             'phone' => ['sometimes', 'required', 'string', 'max:20', 'unique:users,phone,' . $userId],
             'email' => ['sometimes', 'required', 'string', 'email', 'max:150', 'unique:users,email,' . $userId],
             'password' => ['nullable', 'string', 'min:8'],
-
             'license' => ['sometimes', 'required', 'string', 'max:100', 'unique:doctors,license,' . $doctorId],
             'specialization_ids' => ['sometimes', 'required', 'array', 'min:1'],
             'specialization_ids.*' => ['integer', 'exists:specializations,id'],

@@ -37,19 +37,14 @@ class NotificationController extends Controller
     public function show(Notification $notification)
     {
         $this->authorize('view', $notification);
-
-        // Помечаем как прочитанное при открытии
         $notification->update(['is_read' => true]);
-
         return new NotificationResource($notification);
     }
 
     public function destroy(Notification $notification)
     {
         $this->authorize('delete', $notification);
-
         $notification->delete();
-
         return response()->json(["message" => "Уведомление удалено."]);
     }
 }

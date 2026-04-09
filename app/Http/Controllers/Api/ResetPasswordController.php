@@ -36,7 +36,6 @@ class ResetPasswordController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:8|confirmed',
         ]);
-
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
@@ -49,13 +48,11 @@ class ResetPasswordController extends Controller
                 event(new PasswordReset($user));
             }
         );
-
         if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages([
                 'email' => [__($status)],
             ]);
         }
-
         return response()->json(['message' => __($status)], 200);
     }
 }

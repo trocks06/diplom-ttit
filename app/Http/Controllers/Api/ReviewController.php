@@ -22,9 +22,6 @@ class ReviewController extends Controller
         $this->service = $service;
     }
 
-    /**
-     * Список всех отзывов (например, для админа или общей страницы)
-     */
     public function index()
     {
         $reviews = $this->service->getAll([
@@ -44,24 +41,15 @@ class ReviewController extends Controller
 
     public function update(UpdateReviewRequest $request, Review $review)
     {
-        // 1. Проверяем права через Policy
         $this->authorize('update', $review);
-
-        // 2. Обновляем данные (используем те же правила, что и при создании)
         $review->update($request->validated());
-
         return new ReviewResource($review);
     }
 
-    /**
-     * Оставить отзыв
-     */
     public function store(StoreReviewRequest $request, Appointment $appointment)
     {
         $this->authorize('create', [Review::class, $appointment]);
-
         $review = $this->service->createForAppointment($appointment, $request->validated());
-
         return new ReviewResource($review);
     }
 

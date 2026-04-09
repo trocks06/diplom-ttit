@@ -13,16 +13,16 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    protected UserService $userService;
+    protected UserService $service;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserService $service)
     {
-        $this->userService = $userService;
+        $this->service = $service;
     }
 
     public function index()
     {
-        $users = $this->userService->getAll(['role']);
+        $users = $this->service->getAll(['role']);
         return UserResource::collection($users);
     }
 
@@ -41,7 +41,7 @@ class UserController extends Controller
 
     public function updateProfile(UpdateProfileRequest $request)
     {
-        $user = $this->userService->updateProfile(
+        $user = $this->service->updateProfile(
             auth()->user(),
             $request->validated()
         );
@@ -54,7 +54,7 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
-        $this->userService->delete($user->id);
+        $this->service->delete($user->id);
         return response()->json([
             "message" => "Аккаунт успешно удалён."
         ]);
@@ -62,20 +62,17 @@ class UserController extends Controller
 
     public function updateAvatar(UpdateAvatarRequest $request)
     {
-        $path = $this->userService->updateAvatar(auth()->id(), $request->file('avatar'));
+        $path = $this->service->updateAvatar(auth()->id(), $request->file('avatar'));
         return response()->json([
             'message' => 'Аватар успешно обновлён',
             'avatar_url' => $path
         ]);
     }
 
-    /**
-     * Удаление своего аккаунта (для всех ролей)
-     */
     public function deleteMe(): JsonResponse
     {
         try {
-            $this->userService->deleteSelf(auth()->user());
+            $this->service->deleteSelf(auth()->user());
             return response()->json(['message' => 'Ваш профиль удалён.']);
         } catch (ValidationException $e) {
             return response()->json(['message' => $e->getMessage()], 422);

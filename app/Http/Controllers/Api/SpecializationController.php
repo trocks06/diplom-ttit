@@ -11,18 +11,18 @@ use App\Services\SpecializationService;
 
 class SpecializationController extends Controller
 {
-    protected SpecializationService $specializationService;
+    protected SpecializationService $service;
 
-    public function __construct(SpecializationService $specializationService)
+    public function __construct(SpecializationService $service)
     {
-        $this->specializationService = $specializationService;
+        $this->service = $service;
     }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $specializations = $this->specializationService->getAll();
+        $specializations = $this->service->getAll();
         return SpecializationResource::collection($specializations);
     }
 
@@ -31,7 +31,7 @@ class SpecializationController extends Controller
      */
     public function store(StoreSpecializationRequest $request)
     {
-        $specialization = $this->specializationService->create($request->validated());
+        $specialization = $this->service->create($request->validated());
         return new SpecializationResource($specialization);
     }
 
@@ -48,7 +48,7 @@ class SpecializationController extends Controller
      */
     public function update(UpdateSpecializationRequest $request, Specialization $specialization)
     {
-        $updatedSpecialization = $this->specializationService->update($specialization->id, $request->validated());
+        $updatedSpecialization = $this->service->update($specialization->id, $request->validated());
         return new SpecializationResource($updatedSpecialization);
     }
 
@@ -57,7 +57,7 @@ class SpecializationController extends Controller
      */
     public function destroy(Specialization $specialization)
     {
-        $this->specializationService->delete($specialization->id);
+        $this->service->delete($specialization->id);
         return response()->json([
             "message" => "Специальность успешно удалена."
         ]);

@@ -11,53 +11,39 @@ use App\Services\PatientService;
 
 class PatientController extends Controller
 {
-    protected PatientService $patientService;
+    protected PatientService $service;
 
-    public function __construct(PatientService $patientService)
+    public function __construct(PatientService $service)
     {
-        $this->patientService = $patientService;
+        $this->service = $service;
     }
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        $patients = $this->patientService->getAll(['user']);
+        $patients = $this->service->getAll(['user']);
         return PatientResource::collection($patients);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StorePatientRequest $request)
     {
-        $patient = $this->patientService->create($request->validated());
+        $patient = $this->service->create($request->validated());
         return new PatientResource($patient);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Patient $patient)
     {
         return new PatientResource($patient->load(['user']));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdatePatientRequest $request, Patient $patient)
     {
-        $updatedPatient = $this->patientService->update($patient->id, $request->validated());
+        $updatedPatient = $this->service->update($patient->id, $request->validated());
         return new PatientResource($updatedPatient);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Patient $patient)
     {
-        $this->patientService->delete($patient->id);
+        $this->service->delete($patient->id);
         return response()->json([
             "message" => "Профиль пациента успешно удален."
         ]);
