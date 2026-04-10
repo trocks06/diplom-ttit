@@ -24,6 +24,9 @@ class PatientService extends BaseService
     {
         $defaultRole = Role::where('role_name', 'Пациент')->firstOrFail();
         $data['role_id'] = $defaultRole->id;
+        if (auth()->user()?->role->role_name === 'Администратор') {
+            $data['email_verified_at'] = now();
+        }
         return DB::transaction(function () use ($data) {
             $user = $this->userService->create($data);
             $patient = $user->patient()->create([
@@ -33,7 +36,6 @@ class PatientService extends BaseService
                 'allergies'        => $data['allergies'] ?? null,
                 'chronic_diseases' => $data['chronic_diseases'] ?? null,
             ]);
-            $patient->load(['user.role']);
             return $patient;
         });
     }

@@ -22,13 +22,13 @@ class PatientController extends Controller
     {
         $query = $this->service->getFilteredBuilder();
         $query->with(['user']);
-        return PatientResource::collection($query->paginate(20));
+        return PatientResource::collection($query->get());
     }
 
     public function store(StorePatientRequest $request)
     {
         $patient = $this->service->create($request->validated());
-        return new PatientResource($patient);
+        return new PatientResource($patient->load(['user']));
     }
 
     public function show(Patient $patient)

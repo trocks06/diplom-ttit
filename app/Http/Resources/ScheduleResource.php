@@ -10,7 +10,7 @@ class ScheduleResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'doctor_id' => $this->doctor_id,
+            'doctor' => new DoctorResource($this->whenLoaded('doctor')),
             'start_time' => $this->start_time->format('d.m.Y H:i'),
             'end_time' => $this->end_time->format('d.m.Y H:i'),
             'is_booked' => $this->appointments->isNotEmpty() ? 'Занят' : 'Незанят',

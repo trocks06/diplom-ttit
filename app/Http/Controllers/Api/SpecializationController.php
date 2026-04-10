@@ -44,8 +44,6 @@ class SpecializationController extends Controller
     public function destroy(Specialization $specialization)
     {
         $this->service->delete($specialization->id);
-        return response()->json([
-            "message" => "Специальность успешно удалена."
-        ]);
+        return response()->json(['message' => 'Специальность успешно удалена.']);
     }
 }

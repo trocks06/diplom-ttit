@@ -27,8 +27,9 @@ class AuthController extends Controller
         $user = $this->service->register($request->validated());
         $token = $user->createToken("auth_token")->plainTextToken;
         $user->load(['patient', 'role']);
-        $user->sendEmailVerificationNotification();
-        return (new UserResource($user))->additional(['token' => $token]);
+        return (new UserResource($user))->additional(['token' => $token])
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function login(LoginUserRequest $request)

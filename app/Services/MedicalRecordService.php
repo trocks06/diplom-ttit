@@ -29,4 +29,15 @@ class MedicalRecordService extends BaseService
             $q->where('doctor_id', $doctorId);
         })->with(['appointment.patient.user', 'medical_files'])->latest()->get();
     }
+
+    public function getForUser(User $user): Collection
+    {
+        $role = $user->role->role_name;
+        if ($role === 'Пациент') {
+            return $this->getForPatient($user->patient->id);
+        } elseif ($role === 'Врач') {
+            return $this->getForDoctor($user->doctor->id);
+        }
+        return $this->getAll();
+    }
 }

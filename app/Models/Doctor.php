@@ -19,6 +19,13 @@ class Doctor extends Model
         'license'
     ];
 
+    protected static function booted()
+    {
+        static::deleted(function ($doctor) {
+            $doctor->user()->delete();
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

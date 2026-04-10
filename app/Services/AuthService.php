@@ -22,9 +22,10 @@ class AuthService
     public function register(array $data): User
     {
         $patient = $this->patientService->create($data);
-        return $patient->user;
+        $user = $patient->user;
+        $user->sendEmailVerificationNotification();
+        return $user;
     }
-
     public function login(array $data): array
     {
         if (!Auth::attempt($data)) {

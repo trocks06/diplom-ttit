@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Doctor;
+use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -35,17 +37,14 @@ class UserService extends BaseService
     public function updateProfile(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
-            // Общие поля пользователя
             $user->update(array_intersect_key($data, array_flip([
                 'firstname', 'lastname', 'patronymic', 'phone', 'email'
             ])));
-
             if ($user->role?->role_name === 'Пациент' && $user->patient) {
                 $user->patient->update(array_intersect_key($data, array_flip([
                     'address', 'gender', 'allergies', 'chronic_diseases', 'birth_date'
                 ])));
             }
-
             if ($user->role?->role_name === 'Врач' && $user->doctor) {
                 $user->doctor->update(array_intersect_key($data, array_flip(['license'])));
 
@@ -53,7 +52,6 @@ class UserService extends BaseService
                     $user->doctor->specializations()->sync($data['specialization_ids']);
                 }
             }
-
             return $user->load(['patient', 'doctor']);
         });
     }
@@ -62,7 +60,6 @@ class UserService extends BaseService
     {
         DB::transaction(function () use ($user) {
             $role = $user->role?->role_name;
-
             if ($role === 'Пациент') {
                 $hasActive = $user->patient?->appointments()
                     ->whereHas('status', fn($q) => $q->where('status_name', 'Запланирован'))
@@ -73,7 +70,6 @@ class UserService extends BaseService
                     ]);
                 }
             }
-
             if ($role === 'Врач') {
                 $hasUpcoming = $user->doctor?->schedules()
                     ->where('start_time', '>', now())
@@ -87,7 +83,6 @@ class UserService extends BaseService
                     ]);
                 }
             }
-
             if ($role === 'Администратор') {
                 $adminCount = User::whereHas('role', fn($q) => $q->where('role_name', 'Администратор'))
                     ->lockForUpdate()
@@ -98,7 +93,6 @@ class UserService extends BaseService
                     ]);
                 }
             }
-
             $this->delete($user->id);
         });
     }
@@ -106,9 +100,30 @@ class UserService extends BaseService
     public function delete(int $id): bool
     {
         $user = $this->find($id);
+        $authUser = auth()->user();
+        if ($authUser && $authUser->id === $user->id) {
+            throw ValidationException::withMessages([
+                'message' => ['Вы не можете удалить свой собственный аккаунт через админ-панель. Используйте эндпоинт удаления своего профиля.']
+            ]);
+        }
+        if ($user->role?->role_name === 'Администратор') {
+            $adminCount = User::whereHas('role', fn($q) => $q->where('role_name', 'Администратор'))->count();
+            if ($adminCount <= 1) {
+                throw ValidationException::withMessages([
+                    'message' => ['Нельзя удалить последнего администратора.']
+                ]);
+            }
+        }
         if ($user->avatar) {
             $this->avatarService->delete($user->avatar);
         }
+        if ($user->patient) {
+            Patient::withoutEvents(fn() => $user->patient->delete());
+        }
+        if ($user->doctor) {
+            Doctor::withoutEvents(fn() => $user->doctor->delete());
+        }
+
         return $user->delete();
     }
 }

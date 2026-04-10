@@ -21,7 +21,6 @@ class RegisterUserRequest extends FormRequest
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'email' => ['required', 'string', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'address' => ['nullable', 'string', 'max:255'],
             'gender' => ['required', 'string', 'in:Мужской,Женский'],
             'allergies' => ['nullable', 'string', 'max:500'],

@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Schedule;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -34,13 +36,10 @@ class ScheduleService extends BaseService
                 'start_time' => 'Нельзя менять время у слота, на который уже записан пациент.',
             ]);
         }
-
         $doctorId = $data['doctor_id'] ?? $slot->doctor_id;
         $startTime = $data['start_time'] ?? $slot->start_time->format('d.m.Y H:i');
         $endTime = $data['end_time'] ?? $slot->end_time->format('d.m.Y H:i');
-
         $this->checkOverlapping($doctorId, $startTime, $endTime, $id);
-
         return parent::update($id, $data);
     }
 
@@ -49,13 +48,11 @@ class ScheduleService extends BaseService
         $hasActive = $schedule->appointments()
             ->whereHas('status', fn($q) => $q->whereNotIn('status_name', ['Отменен', 'Отменён']))
             ->exists();
-
         if ($hasActive) {
             throw ValidationException::withMessages([
                 'schedule' => ['Нельзя удалить забронированный слот.'],
             ]);
         }
-
         $this->delete($schedule->id);
     }
 
@@ -63,7 +60,6 @@ class ScheduleService extends BaseService
     {
         $startTime = Carbon::createFromFormat('d.m.Y H:i', $start);
         $endTime = Carbon::createFromFormat('d.m.Y H:i', $end);
-
         $overlap = $this->model->where('doctor_id', $doctorId)
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('start_time', '<', $endTime)
@@ -71,7 +67,6 @@ class ScheduleService extends BaseService
             })
             ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
             ->exists();
-
         if ($overlap) {
             throw ValidationException::withMessages([
                 'start_time' => 'Этот временной интервал пересекается с уже существующим расписанием врача.',
@@ -104,5 +99,19 @@ class ScheduleService extends BaseService
             ])
             ->allowedSorts(['start_time', 'end_time'])
             ->defaultSort('start_time');
+    }
+
+    public function getAvailableForUser(?User $user): Collection
+    {
+        $query = $this->getFilteredBuilder();
+        $query->with(['doctor.user']);
+
+        if ($user && $user->role->role_name === 'Врач') {
+            $query->where('doctor_id', $user->doctor->id);
+        } elseif (!$user || $user->role->role_name === 'Пациент') {
+            $query->where('start_time', '>=', now());
+        }
+
+        return $query->get();
     }
 }

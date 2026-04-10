@@ -37,7 +37,7 @@ class NotificationController extends Controller
     public function show(Notification $notification)
     {
         $this->authorize('view', $notification);
-        $notification->update(['is_read' => true]);
+        $this->service->markAsRead($notification, auth()->user());
         return new NotificationResource($notification);
     }
 

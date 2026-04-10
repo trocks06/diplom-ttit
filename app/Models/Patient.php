@@ -34,4 +34,11 @@ class Patient extends Model
 	{
 		return $this->hasMany(Appointment::class);
 	}
+
+    protected static function booted()
+    {
+        static::deleted(function ($patient) {
+            $patient->user()->delete();
+        });
+    }
 }

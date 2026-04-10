@@ -26,14 +26,7 @@ class MedicalRecordController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
-        if ($user->role->role_name === 'Пациент') {
-            $records = $this->service->getForPatient($user->patient->id);
-        } elseif ($user->role->role_name === 'Врач') {
-            $records = $this->service->getForDoctor($user->doctor->id);
-        } else {
-            $records = $this->service->getAll();
-        }
+        $records = $this->service->getForUser(auth()->user());
         return MedicalRecordResource::collection($records);
     }
 

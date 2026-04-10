@@ -10,9 +10,4 @@ class RoleService extends BaseService
     {
         parent::__construct($role);
     }
-
-    public function canBeDeleted(Role $role): bool
-    {
-        return $role->users()->count() === 0;
-    }
 }

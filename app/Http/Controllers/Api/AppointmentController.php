@@ -24,15 +24,8 @@ class AppointmentController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
-        $roleName = $user->role->role_name;
-        $query = $this->service->getFilteredBuilder();
-        if ($roleName === 'Врач') {
-            $query->whereHas('schedule', fn($q) => $q->where('doctor_id', $user->doctor->id));
-        } elseif ($roleName === 'Пациент') {
-            $query->where('patient_id', $user->patient->id);
-        }
-        return AppointmentResource::collection($query->get());
+        $appointments = $this->service->getForUser(auth()->user());
+        return AppointmentResource::collection($appointments);
     }
 
     public function store(StoreAppointmentRequest $request)

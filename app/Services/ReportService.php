@@ -28,14 +28,13 @@ class ReportService
                 return [
                     'patient_id' => $patient->id,
                     'name' => $patient->user->firstname . ' ' . $patient->user->lastname,
-                    'total_appointments' => $patient->total_appointments, // Берем уже посчитанное БД
+                    'total_appointments' => $patient->total_appointments,
                     'last_appointment' => $patient->last_appointment_date
                         ? Carbon::parse($patient->last_appointment_date)->format('d.m.Y')
                         : null,
-                    'canceled_appointments' => $patient->canceled_appointments, // Берем уже посчитанное БД
+                    'canceled_appointments' => $patient->canceled_appointments,
                 ];
             });
-
         return $patients->toArray();
     }
 

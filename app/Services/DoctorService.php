@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Sorts\SortByRating;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -80,5 +81,24 @@ class DoctorService extends BaseService
                 AllowedSort::custom('rating', new SortByRating()),
             ])
             ->defaultSort('-created_at');
+    }
+
+    public function delete(int $id): bool
+    {
+        $doctor = $this->find($id);
+        $hasUpcoming = $doctor->schedules()
+            ->where('start_time', '>', now())
+            ->whereHas('appointments', function ($q) {
+                $q->whereHas('status', fn($s) => $s->where('status_name', 'Запланирован'));
+            })
+            ->exists();
+
+        if ($hasUpcoming) {
+            throw ValidationException::withMessages([
+                'message' => ['Невозможно удалить врача, у которого есть предстоящие приёмы.']
+            ]);
+        }
+
+        return parent::delete($id);
     }
 }

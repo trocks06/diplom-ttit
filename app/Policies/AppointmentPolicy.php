@@ -28,12 +28,8 @@ class AppointmentPolicy
             $user->id === $appointment->schedule?->doctor?->user_id;
     }
 
-    /**
-     * Можно ли менять статус?
-     */
     public function updateStatus(User $user, Appointment $appointment): bool
     {
-        // Врач может менять любые статусы в своем расписании
-        return $user->id === $appointment->schedule?->doctor?->user_id;
+        return $user->role?->role_name === 'Администратор';
     }
 }

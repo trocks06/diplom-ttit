@@ -25,18 +25,13 @@ class ScheduleController extends Controller
 
     public function index()
     {
-        $query = $this->service->getFilteredBuilder();
-        $query->with(['doctor.user']);
-        if (!auth()->user() || auth()->user()->role->role_name === 'Пациент') {
-            $query->where('start_time', '>=', now());
-        }
-
-        return ScheduleResource::collection($query->get());
+        $schedules = $this->service->getAvailableForUser(auth()->user());
+        return ScheduleResource::collection($schedules);
     }
 
     public function show(Schedule $schedule)
     {
-        return new ScheduleResource($schedule);
+        return new ScheduleResource($schedule->load(['doctor.user']));
     }
 
     public function store(StoreScheduleRequest $request)
