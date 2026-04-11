@@ -5,14 +5,11 @@ namespace App\Services;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
-/**
- * @extends BaseService<User>
- */
 class UserService extends BaseService
 {
     protected AvatarService $avatarService;
@@ -55,6 +52,20 @@ class UserService extends BaseService
             return $user->load(['patient', 'doctor']);
         });
     }
+    protected function performDelete(User $user): bool
+    {
+        if ($user->avatar) {
+            $this->avatarService->delete($user->avatar);
+        }
+        if ($user->patient) {
+            Patient::withoutEvents(fn() => $user->patient->delete());
+        }
+        if ($user->doctor) {
+            Doctor::withoutEvents(fn() => $user->doctor->delete());
+        }
+
+        return $user->delete();
+    }
 
     public function deleteSelf(User $user): void
     {
@@ -93,7 +104,7 @@ class UserService extends BaseService
                     ]);
                 }
             }
-            $this->delete($user->id);
+            $this->performDelete($user);
         });
     }
 
@@ -114,16 +125,11 @@ class UserService extends BaseService
                 ]);
             }
         }
-        if ($user->avatar) {
-            $this->avatarService->delete($user->avatar);
-        }
-        if ($user->patient) {
-            Patient::withoutEvents(fn() => $user->patient->delete());
-        }
-        if ($user->doctor) {
-            Doctor::withoutEvents(fn() => $user->doctor->delete());
-        }
+        return $this->performDelete($user);
+    }
 
-        return $user->delete();
+    public function getQueryBuilder(): Builder
+    {
+        return $this->model->newQuery();
     }
 }

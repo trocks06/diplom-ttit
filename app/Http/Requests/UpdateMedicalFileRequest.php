@@ -13,7 +13,7 @@ class UpdateMedicalFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:jpg,png,pdf,docx', 'max:10240'],
+            'file' => ['sometimes', 'file', 'mimes:jpg,png,pdf,docx', 'max:10240'],
             'file_name' => ['sometimes', 'string', 'max:255'],
         ];
     }

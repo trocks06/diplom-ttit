@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -20,9 +21,13 @@ class UserController extends Controller
         $this->service = $service;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->service->getAll(['role']);
+        $perPage = $request->input('per_page', 10);
+        $users = $this->service->getQueryBuilder()
+            ->with(['role', 'patient', 'doctor'])
+            ->paginate($perPage);
+
         return UserResource::collection($users);
     }
 

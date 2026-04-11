@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Doctor;
 use App\Models\Role;
-use App\Sorts\SortByRating;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -78,7 +78,17 @@ class DoctorService extends BaseService
             ->allowedSorts([
                 'id',
                 'created_at',
-                AllowedSort::custom('rating', new SortByRating()),
+                AllowedSort::callback('rating', function (Builder $query, bool $descending, string $property) {
+                    $direction = $descending ? 'DESC' : 'ASC';
+                    $query->orderByRaw("
+                    (SELECT AVG(reviews.rating)
+                     FROM reviews
+                     INNER JOIN appointments ON appointments.id = reviews.appointment_id
+                     INNER JOIN schedules ON schedules.id = appointments.schedule_id
+                     WHERE schedules.doctor_id = doctors.id
+                    ) {$direction}
+                ");
+                }),
             ])
             ->defaultSort('-created_at');
     }

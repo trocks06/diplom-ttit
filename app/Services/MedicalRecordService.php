@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\MedicalRecord;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Validation\ValidationException;
 
 class MedicalRecordService extends BaseService
 {

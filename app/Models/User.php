@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Created by Reliese Model.
- */
-
 namespace App\Models;
 
 use App\Notifications\ApiResetPassword;
@@ -12,34 +8,10 @@ use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-/**
- * Class User
- *
- * @property int $id
- * @property string|null $firstname
- * @property string|null $lastname
- * @property string|null $patronymic
- * @property string|null $phone
- * @property string $email
- * @property string $password
- * @property string|null $avatar
- * @property bool|null $verified
- * @property int|null $role_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- *
- * @property Role|null $role
- * @property Doctor|null $doctor
- * @property Collection|Notification[] $notifications
- * @property Patient|null $patient
- *
- * @package App\Models
- */
 class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */

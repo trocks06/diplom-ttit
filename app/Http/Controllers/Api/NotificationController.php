@@ -21,9 +21,12 @@ class NotificationController extends Controller
         $this->service = $service;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $notifications = $this->service->getForUser(auth()->id());
+        $perPage = $request->input('per_page', 15);
+        $notifications = $this->service->getQueryForUser(auth()->id())
+            ->paginate($perPage);
+
         return NotificationResource::collection($notifications);
     }
 

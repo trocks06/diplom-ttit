@@ -22,9 +22,12 @@ class AppointmentController extends Controller
         $this->service = $service;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $appointments = $this->service->getForUser(auth()->user());
+        $perPage = $request->input('per_page', 15);
+        $appointments = $this->service->getQueryForUser(auth()->user())
+            ->paginate($perPage);
+
         return AppointmentResource::collection($appointments);
     }
 
@@ -46,6 +49,9 @@ class AppointmentController extends Controller
     public function updateStatus(UpdateAppointmentStatusRequest $request, Appointment $appointment)
     {
         $this->authorize('updateStatus', $appointment);
+        if (in_array($appointment->status->status_name, ['Отменен', 'Отменён'])) {
+            return response()->json(['message' => 'Нельзя отменить статус у отмененного приема.']);
+        }
         $updated = $this->service->update($appointment->id, [
             'status_id' => $request->status_id
         ]);

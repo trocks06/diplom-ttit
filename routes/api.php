@@ -42,27 +42,23 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('throttle:6,1');
     Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->middleware('signed')->name('verification.verify');
-
     Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show', 'store']);
-    Route::post('appointments/{appointment}/review', [ReviewController::class, 'store']);
-
     Route::apiResource('schedules', ScheduleController::class)->only(['index', 'show']);
-
     Route::apiResource('medical-records', MedicalRecordController::class)->only(['index', 'show']);
     Route::get('medical-files/{medical_file}/download', [MedicalFileController::class, 'download'])
         ->name('medical-files.download');
-
     Route::apiResource('notifications', NotificationController::class)->only(['index', 'show', 'destroy']);
     Route::apiResource('patients', PatientController::class)->only(['index', 'show']);
-
     Route::post('appointments/{appointment}/medical-record', [MedicalRecordController::class, 'store']);
     Route::apiResource('medical-records', MedicalRecordController::class)->only(['update', 'destroy']);
-
     Route::post('medical-records/{medical_record}/files', [MedicalFileController::class, 'store']);
     Route::patch('medical-files/{medical_file}', [MedicalFileController::class, 'update']);
     Route::delete('medical-files/{medical_file}', [MedicalFileController::class, 'destroy']);
-
-    Route::apiResource('reviews', ReviewController::class)->only(['update', 'destroy']);
+    Route::middleware(['verified'])->group(function () {
+        Route::post('appointments', [AppointmentController::class, 'store']);
+        Route::apiResource('reviews', ReviewController::class)->only(['update', 'destroy']);
+        Route::post('appointments/{appointment}/review', [ReviewController::class, 'store']);
+    });
 
     Route::middleware(['role:Администратор'])->group(function () {
         Route::apiResource('users', UserController::class)->only(['index', 'show', 'destroy']);

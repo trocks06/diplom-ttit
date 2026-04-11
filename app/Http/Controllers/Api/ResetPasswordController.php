@@ -23,7 +23,7 @@ class ResetPasswordController extends Controller
                 'email' => [__($status)],
             ]);
         }
-        return response()->json(['message' => __($status)], 200);
+        return response()->json(['message' => __($status)]);
     }
 
     public function reset(Request $request)

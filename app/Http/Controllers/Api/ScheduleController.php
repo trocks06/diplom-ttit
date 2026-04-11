@@ -23,9 +23,12 @@ class ScheduleController extends Controller
         $this->service = $service;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $schedules = $this->service->getAvailableForUser(auth()->user());
+        $perPage = $request->input('per_page', 15);
+        $schedules = $this->service->getQueryForUser(auth()->user())
+            ->paginate($perPage);
+
         return ScheduleResource::collection($schedules);
     }
 

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Schedule;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -101,7 +100,7 @@ class ScheduleService extends BaseService
             ->defaultSort('start_time');
     }
 
-    public function getAvailableForUser(?User $user): Collection
+    public function getQueryForUser(?User $user): QueryBuilder
     {
         $query = $this->getFilteredBuilder();
         $query->with(['doctor.user']);
@@ -112,6 +111,6 @@ class ScheduleService extends BaseService
             $query->where('start_time', '>=', now());
         }
 
-        return $query->get();
+        return $query;
     }
 }

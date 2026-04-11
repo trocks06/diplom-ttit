@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Patient;
 use App\Models\Role;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\QueryBuilder\AllowedFilter;

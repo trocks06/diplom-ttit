@@ -7,11 +7,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Resources\UserResource;
-use App\Models\Role;
-use App\Models\User;
 use App\Services\AuthService;
-use Illuminate\Database\Eloquent\Attributes\UseResource;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller

@@ -28,13 +28,6 @@ class ReviewService extends BaseService
         return $this->create($data);
     }
 
-    public function getForDoctor(int $doctorId)
-    {
-        return Review::whereHas('appointment.schedule', function($q) use ($doctorId) {
-            $q->where('doctor_id', $doctorId);
-        })->with('appointment.patient.user')->latest()->get();
-    }
-
     public function getFilteredBuilder()
     {
         return QueryBuilder::for(Review::class)

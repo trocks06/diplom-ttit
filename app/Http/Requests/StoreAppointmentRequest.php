@@ -12,7 +12,7 @@ class StoreAppointmentRequest extends FormRequest
     {
         return [
             'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
-            'patient_id' => ['required', 'integer', 'exists:patients,id'],
+            'patient_id' => ['sometimes', 'integer', 'exists:patients,id'],
         ];
     }
 }

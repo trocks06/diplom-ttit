@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
-    /**
-     * Отчёт по пациентам: количество приёмов, последний визит и т.д.
-     */
     public function patientsReport(): array
     {
         $patients = Patient::with(['user'])

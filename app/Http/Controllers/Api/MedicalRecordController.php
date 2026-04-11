@@ -10,8 +10,6 @@ use App\Models\Appointment;
 use App\Models\MedicalRecord;
 use App\Services\MedicalRecordService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class MedicalRecordController extends Controller
 {
@@ -33,6 +31,11 @@ class MedicalRecordController extends Controller
     public function store(StoreMedicalRecordRequest $request, Appointment $appointment)
     {
         $this->authorize('create', [MedicalRecord::class, $appointment]);
+        if ($appointment->medical_record()->exists()) {
+            return response()->json([
+                'message' => 'Медицинская запись для данного приёма уже существует.'
+            ], 422);
+        }
         $data = $request->validated();
         $data['appointment_id'] = $appointment->id;
         $record = $this->service->create($data);

@@ -28,7 +28,15 @@ class MedicalFileService extends BaseService
         ]);
     }
 
-    public function updateFile(MedicalFile $medicalFile, UploadedFile $newFile, ?string $customName = null): MedicalFile
+    public function deleteFile(MedicalFile $file): void
+    {
+        if (Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+        $file->delete();
+    }
+
+    public function replaceFile(MedicalFile $medicalFile, UploadedFile $newFile, ?string $customName = null): MedicalFile
     {
         if (Storage::disk('local')->exists($medicalFile->file_path)) {
             Storage::disk('local')->delete($medicalFile->file_path);
@@ -45,11 +53,11 @@ class MedicalFileService extends BaseService
         return $medicalFile;
     }
 
-    public function deleteFile(MedicalFile $file): void
+    public function updateFileName(MedicalFile $medicalFile, ?string $newName): MedicalFile
     {
-        if (Storage::disk('local')->exists($file->file_path)) {
-            Storage::disk('local')->delete($file->file_path);
+        if ($newName) {
+            $medicalFile->update(['file_name' => $newName]);
         }
-        $file->delete();
+        return $medicalFile;
     }
 }

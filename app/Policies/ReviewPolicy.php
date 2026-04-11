@@ -20,7 +20,7 @@ class ReviewPolicy
     {
         // Только пациент, чей это приём, и только если приём завершён
         return $user->id === $appointment->patient?->user_id
-            && $appointment->status?->status_name === 'Завершён';
+            && $appointment->status?->status_name === 'Завершён' || 'Завершен';
     }
 
     public function update(User $user, Review $review): bool

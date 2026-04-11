@@ -41,8 +41,15 @@ class MedicalFileController extends Controller
     public function update(UpdateMedicalFileRequest $request, MedicalFile $medicalFile)
     {
         $this->authorize('update', $medicalFile);
-        $updatedFile = $this->service->updateFile($medicalFile, $request->file('file'), $request->input('file_name'));
-        return new MedicalFileResource($updatedFile);
+        $file = $request->file('file');
+        $fileName = $request->input('file_name');
+        if ($file) {
+            $updated = $this->service->replaceFile($medicalFile, $file, $fileName);
+        } else {
+            $updated = $this->service->updateFileName($medicalFile, $fileName);
+        }
+
+        return new MedicalFileResource($updated);
     }
 
     public function download(MedicalFile $medicalFile)
@@ -51,7 +58,7 @@ class MedicalFileController extends Controller
         if (!Storage::disk('local')->exists($medicalFile->file_path)) {
             return response()->json(['message' => 'Файл не найден'], 404);
         }
-        $fullPath = storage_path('app/' . $medicalFile->file_path);
+        $fullPath = storage_path('app/private/' . $medicalFile->file_path);
         return response()->file($fullPath);
     }
 }
