@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNotificationRequest;
 use App\Http\Resources\NotificationResource;
+use App\Mail\NotificationAlert;
 use App\Models\Notification;
 use App\Services\NotificationService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationController extends Controller
 {
@@ -34,6 +36,7 @@ class NotificationController extends Controller
     {
         $this->authorize('create', Notification::class);
         $notification = $this->service->create($request->validated());
+        Mail::to($request->user()->email)->send(new NotificationAlert($request->user(), $request->text));
         return new NotificationResource($notification);
     }
 

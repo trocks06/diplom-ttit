@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GenerateScheduleRequest;
+use App\Http\Requests\GenerateSheduleRequest;
 use App\Http\Requests\StoreScheduleRequest;
 use App\Http\Requests\UpdateScheduleRequest;
 use App\Http\Resources\ScheduleResource;
@@ -10,6 +12,7 @@ use App\Models\Schedule;
 use App\Services\ScheduleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Validation\ValidationException;
 
 class ScheduleController extends Controller
@@ -57,5 +60,24 @@ class ScheduleController extends Controller
         } catch (ValidationException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
+    }
+
+    public function generate(GenerateScheduleRequest $request)
+    {
+        $validated = $request->validated();
+        $params = [
+            'doctor_id' => $validated['doctor_id'],
+            'start_date' => $validated['start_date'],
+            '--days' => $validated['days'],
+            '--start-time' => $validated['start_time'],
+            '--end-time' => $validated['end_time'],
+            '--slot-duration' => $validated['slot_duration'],
+            '--weeks' => $validated['weeks'] ?? 1,
+        ];
+        if (!empty($validated['breaks'])) {
+            $params['--breaks'] = $validated['breaks'];
+        }
+        Artisan::call('schedule:generate', $params);
+        return response()->json(['message' => 'Расписание сгенерировано']);
     }
 }

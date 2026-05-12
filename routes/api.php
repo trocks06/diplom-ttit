@@ -65,12 +65,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('patients', PatientController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('doctors', DoctorController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('schedules', ScheduleController::class)->only(['store', 'update', 'destroy']);
+        Route::post('schedules/generate', [ScheduleController::class, 'generate']);
         Route::apiResource('specializations', SpecializationController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('statuses', StatusController::class)->only(['index', 'show']);
         Route::apiResource('roles', RoleController::class)->only(['index', 'show']);
         Route::post('notifications', [NotificationController::class, 'store']);
         Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus']);
-
         Route::prefix('reports')->group(function () {
             Route::get('patients', [ReportController::class, 'patients']);
             Route::get('doctors', [ReportController::class, 'doctors']);

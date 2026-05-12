@@ -24,8 +24,6 @@ abstract class BaseService
     }
 
     /**
-     * Получить все записи с возможностью eager loading связей.
-     *
      * @param array<string> $with
      * @return Collection
      */
